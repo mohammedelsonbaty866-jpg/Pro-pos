@@ -85,3 +85,33 @@ function totalExpenses() {
 function netProfit() {
   return totalSales() - totalPurchases() - totalExpenses();
 }
+/* =========================
+   Local Data Storage
+   ========================= */
+
+// المبيعات
+let sales = JSON.parse(localStorage.getItem("sales") || "[]");
+
+// المشتريات
+let purchases = JSON.parse(localStorage.getItem("purchases") || "[]");
+
+// المصروفات
+let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
+
+// المناديب
+let reps = JSON.parse(localStorage.getItem("reps") || "[]");
+
+// حفظ كل البيانات
+function saveAll() {
+  localStorage.setItem("sales", JSON.stringify(sales));
+  localStorage.setItem("purchases", JSON.stringify(purchases));
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+  localStorage.setItem("reps", JSON.stringify(reps));
+}
+
+// مسح كل البيانات (اختياري)
+function resetAllData() {
+  if (!confirm("هل أنت متأكد من مسح كل البيانات؟")) return;
+  localStorage.clear();
+  location.reload();
+}
