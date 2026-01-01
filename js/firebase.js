@@ -13,7 +13,11 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-
+// ===== OFFLINE ENABLE =====
+db.enablePersistence()
+  .catch(err => {
+    console.log("Offline persistence error", err.code);
+  });
 // ===== AUTH =====
 function login(){
   const email = loginEmail.value;
