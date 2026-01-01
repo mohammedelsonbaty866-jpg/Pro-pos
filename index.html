@@ -205,7 +205,21 @@ function addItem() {
     price,
     total: qty * price
   });
+<div id="pricing" class="box">
+  <h2>خطط الاشتراك</h2>
 
+  <div class="plan">
+    <h3>شهري</h3>
+    <p>199 جنيه</p>
+    <button>اشترك</button>
+  </div>
+
+  <div class="plan">
+    <h3>سنوي</h3>
+    <p>1999 جنيه</p>
+    <button>اشترك</button>
+  </div>
+</div>
   renderInvoice();
 
   saleProduct.value = "";
