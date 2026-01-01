@@ -1,500 +1,123 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <meta charset="UTF-8">
+  <title>Pos Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-<meta charset="UTF-8">
-<title>كاشير – سوبر ماركت</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  body{font-family:tahoma;background:#eef2f7;margin:0}
-header{background:#0d6efd;color:#fff;padding:15px;font-size:20px}
-.box{background:#fff;margin:12px;padding:15px;border-radius:8px}
-button{border-radius:6px;cursor:pointer}
-button.primary{background:#0d6efd;color:#fff}
-table th{background:#f1f1f1}
-nav button.active{border-bottom:3px solid #0d6efd}
-<style>
-:root{
-  --main:#0d6efd;
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --text:#222;
-  --muted:#6c757d;
-  --danger:#dc3545;
-  --success:#198754;
-}
 
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Tahoma, Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-header{
-  background:var(--main);
-  color:#fff;
-  padding:14px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-}
-
-header img{
-  width:40px;
-  vertical-align:middle;
-  margin-left:8px;
-}
-
-.container{
-  max-width:900px;
-  margin:auto;
-}
-
-.box{
-  background:var(--card);
-  margin:15px;
-  padding:15px;
-  border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);
-}
-
-h3{
-  margin-top:0;
-  margin-bottom:10px;
-}
-
-input, select, button{
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  font-size:15px;
-}
-
-input, select{
-  border:1px solid #ddd;
-  border-radius:5px;
-}
-
-button{
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-button.primary{
-  background:var(--main);
-  color:#fff;
-}
-
-button.success{
-  background:var(--success);
-  color:#fff;
-}
-
-button.danger{
-  background:var(--danger);
-  color:#fff;
-}
-
-nav{
-  display:flex;
-  background:#fff;
-  border-bottom:1px solid #ddd;
-}
-
-nav button{
-  flex:1;
-  padding:12px 5px;
-  background:none;
-  border:none;
-  font-size:14px;
-}
-
-nav button.active{
-  background:var(--main);
-  color:#fff;
-}
-
-.hidden{display:none}
-
-.list div{
-  padding:6px 0;
-  border-bottom:1px dashed #eee;
-  font-size:14px;
-}
-
-.total{
-  font-size:16px;
-  font-weight:bold;
-  margin-top:10px;
-}
-
-.print-area{
-  display:none;
-}
-
-@media print{
-  body *{visibility:hidden}
-  .print-area, .print-area *{visibility:visible}
-  .print-area{
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-  }
-}
-</style>
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/app.css">
 </head>
+
 <body>
 
-<header>
-  <img src="" alt="">
-  كاشير – سوبر ماركت
+<header class="header">
+  <h1>🧾 Pos Pro</h1>
+  <span>سوبر ماركت</span>
 </header>
 
-<div class="container">
-
-<!-- ===== تسجيل الدخول ===== -->
-<!-- LOGIN -->
-<div id="loginBox" class="box">
-  <h3>تسجيل الدخول</h3>
-  <input id="username" placeholder="اسم المستخدم">
-  <input id="password" type="password" placeholder="كلمة المرور">
-  <button class="primary" onclick="login()">دخول</button>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-  <!-- البرنامج كله هنا -->
-</div>
-<!-- ===== التطبيق ===== -->
-<div id="app" class="hidden">
-
-<nav>
-  <button class="active" onclick="showPage('sales',this)">المبيعات</button>
-  <button onclick="showPage('purchases',this)">المشتريات</button>
-  <button onclick="showPage('agents',this)">المناديب</button>
-  <button onclick="showPage('stock',this)">المخزون</button>
-  <button onclick="showPage('reports',this)">التقارير</button>
-  <button onclick="logout()">خروج</button>
+<nav class="nav">
+  <button onclick="showSection('sales')" class="active">المبيعات</button>
+  <button onclick="showSection('purchases')">المشتريات</button>
+  <button onclick="showSection('inventory')">المخزون</button>
+  <button onclick="showSection('agents')">المناديب</button>
+  <button onclick="showSection('expenses')">المصروفات</button>
+  <button onclick="showSection('reports')">التقارير</button>
 </nav>
-<!-- ===== صفحة المبيعات ===== -->
-<div id="sales" class="box">
 
-  <h3>🧾 فاتورة بيع</h3>
+<main class="container">
 
-  <input id="saleItem" placeholder="اسم الصنف">
-  <input id="saleQty" type="number" placeholder="الكمية" value="1">
-  <input id="salePrice" type="number" placeholder="سعر الوحدة">
+  <!-- المبيعات -->
+  <section id="sales" class="box">
+    <h2>🧾 فاتورة بيع</h2>
 
-  <button class="primary" onclick="addSaleItem()">➕ إضافة للفاتورة</button>
+    <input id="saleItem" placeholder="اسم الصنف">
+    <input id="saleQty" type="number" placeholder="الكمية" value="1">
+    <input id="salePrice" type="number" placeholder="السعر">
 
-  <hr>
+    <button class="primary" onclick="addSale()">➕ إضافة</button>
 
-  <table width="100%" border="1" cellpadding="5" style="border-collapse:collapse;text-align:center">
-    <thead>
-      <tr>
-        <th>الصنف</th>
-        <th>الكمية</th>
-        <th>السعر</th>
-        <th>الإجمالي</th>
-      </tr>
-    </thead>
-    <tbody id="invoiceBody"></tbody>
-  </table>
+    <div id="salesList"></div>
 
-  <h3>الإجمالي: <span id="invoiceTotal">0</span> جنيه</h3>
+    <div class="total">
+      الإجمالي: <span id="salesTotal">0</span>
+    </div>
 
-  <button onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
-  <button onclick="clearInvoice()">🗑️ فاتورة جديدة</button>
+    <button onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
+  </section>
 
-</div>
-<!-- ===== صفحة المشتريات ===== -->
-<div id="purchases" class="box hidden">
+  <!-- المشتريات -->
+  <section id="purchases" class="box hidden">
+    <h2>📦 مشتريات</h2>
 
-  <h3>📦 المشتريات (إضافة مخزون)</h3>
+    <input id="buyItem" placeholder="اسم الصنف">
+    <input id="buyQty" type="number" value="1">
+    <input id="buyPrice" type="number" placeholder="سعر الشراء">
 
-  <input id="buyItem" placeholder="اسم الصنف">
-  <input id="buyQty" type="number" placeholder="الكمية">
-  <input id="buyCost" type="number" placeholder="سعر الشراء للوحدة">
+    <button class="primary" onclick="addPurchase()">➕ إضافة</button>
 
-  <button class="primary" onclick="addPurchase()">➕ إضافة للمخزون</button>
+    <div id="purchaseList"></div>
+  </section>
 
-  <hr>
+  <!-- المخزون -->
+  <section id="inventory" class="box hidden">
+    <h2>📊 المخزون</h2>
+    <div id="inventoryList"></div>
+  </section>
 
-  <h4>📊 المخزون الحالي</h4>
+  <!-- المناديب -->
+  <section id="agents" class="box hidden">
+    <h2>👤 المناديب</h2>
 
-  <table width="100%" border="1" cellpadding="5" style="border-collapse:collapse;text-align:center">
-    <thead>
-      <tr>
-        <th>الصنف</th>
-        <th>الكمية</th>
-        <th>متوسط التكلفة</th>
-      </tr>
-    </thead>
-    <tbody id="stockBody"></tbody>
-  </table>
+    <input id="agentName" placeholder="اسم المندوب">
+    <button class="primary" onclick="addAgent()">➕ إضافة مندوب</button>
 
-</div>
-<!-- ===== صفحة المصروفات ===== -->
-<div id="expenses" class="box hidden">
+    <div id="agentsList"></div>
+  </section>
 
-  <h3>💸 المصروفات</h3>
+  <!-- المصروفات -->
+  <section id="expenses" class="box hidden">
+    <h2>💸 المصروفات</h2>
 
-  <input id="expName" placeholder="وصف المصروف">
-  <input id="expAmount" type="number" placeholder="المبلغ">
+    <input id="expenseDesc" placeholder="الوصف">
+    <input id="expenseAmount" type="number" placeholder="المبلغ">
 
-  <button class="primary" onclick="addExpense()">➕ إضافة مصروف</button>
+    <button class="primary" onclick="addExpense()">➕ إضافة</button>
 
-  <hr>
+    <div id="expensesList"></div>
+  </section>
 
-  <ul id="expenseList"></ul>
+  <!-- التقارير -->
+  <section id="reports" class="box hidden">
+    <h2>📈 التقارير</h2>
 
-</div>
+    <p>إجمالي المبيعات: <b id="reportSales">0</b></p>
+    <p>إجمالي المشتريات: <b id="reportPurchases">0</b></p>
+    <p>إجمالي المصروفات: <b id="reportExpenses">0</b></p>
+    <p>صافي الربح: <b id="reportNet">0</b></p>
+  </section>
 
+</main>
 
-<!-- ===== صفحة التقارير ===== -->
-<div id="reports" class="box hidden">
+<!-- JS -->
+<script src="js/data.js"></script>
+<script src="js/sales.js"></script>
+<script src="js/purchases.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/expenses.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/app.js"></script>
 
-  <h3>📈 التقارير</h3>
-
-  <p>إجمالي المبيعات: <b id="repSales">0</b> جنيه</p>
-  <p>تكلفة المبيعات: <b id="repCost">0</b> جنيه</p>
-  <p>إجمالي المصروفات: <b id="repExpenses">0</b> جنيه</p>
-
-  <hr>
-
-  <h3>🟢 صافي الربح</h3>
-  <h2 id="repNet">0 جنيه</h2>
-
-</div>
-<!-- ===== صفحة المناديب ===== -->
-<div id="agents" class="box hidden">
-
-  <h3>🧑‍💼 المناديب</h3>
-
-  <input id="agentName" placeholder="اسم المندوب">
-  <button class="primary" onclick="addAgent()">➕ إضافة مندوب</button>
-
-  <hr>
-
-  <ul id="agentList"></ul>
-
-</div>
+<!-- Service Worker -->
 <script>
-// ===== المناديب =====
-let agents = JSON.parse(localStorage.getItem("agents") || "[]");
-let currentAgent = null;
-
-function addAgent(){
-  if(!agentName.value) return;
-  agents.push({name: agentName.value, sales: 0});
-  localStorage.setItem("agents", JSON.stringify(agents));
-  agentName.value="";
-  renderAgents();
-}
-
-function renderAgents(){
-  agentList.innerHTML="";
-  agents.forEach((a,i)=>{
-    agentList.innerHTML+=`
-      <li onclick="selectAgent(${i})">
-        ${a.name} - مبيعات: ${a.sales} جنيه
-      </li>`;
-  });
-}
-
-function selectAgent(i){
-  currentAgent = i;
-  alert("تم اختيار المندوب: " + agents[i].name);
-}
-
-renderAgents();
-</script>
-<script>
-// ===== بيانات عامة =====
-let invoice = [];
-let totalSales = 0;
-let totalCost = 0;
-let totalExpenses = 0;
-
-// ===== إضافة عنصر للفاتورة =====
-function addSaleItem(){
-  if(!saleItem.value || !salePrice.value) return alert("أدخل البيانات");
-
-  let qty = +saleQty.value;
-  let price = +salePrice.value;
-  let total = qty * price;
-
-  invoice.push({name:saleItem.value, qty, price, total});
-
-  invoiceBody.innerHTML += `
-    <tr>
-      <td>${saleItem.value}</td>
-      <td>${qty}</td>
-      <td>${price}</td>
-      <td>${total}</td>
-    </tr>
-  `;
-
-  totalSales += total;
-  invoiceTotal.innerText = totalSales;
-
-  // ربط المندوب
-  if(currentAgent !== null){
-    agents[currentAgent].sales += total;
-    localStorage.setItem("agents", JSON.stringify(agents));
-    renderAgents();
-  }
-
-  saveLocal();
-  updateReports();
-}
-
-// ===== مسح الفاتورة =====
-function clearInvoice(){
-  invoice=[];
-  invoiceBody.innerHTML="";
-  totalSales=0;
-  invoiceTotal.innerText=0;
-}
-
-// ===== الطباعة =====
-function printInvoice(){
-  let html = `
-  <h2 style="text-align:center">سوبر ماركت</h2>
-  <hr>
-  ${document.querySelector("#sales").innerHTML}
-  <script>window.print()</script>
-  <script>
-  `;
-  let w = window.open();
-  w.document.write(html);
-  w.document.close();
-}
-
-// ===== مشتريات =====
-let stock = JSON.parse(localStorage.getItem("stock")||"{}");
-
-function addPurchase(){
-  let name = buyItem.value;
-  let qty = +buyQty.value;
-  let cost = +buyCost.value;
-
-  if(!stock[name]) stock[name]={qty:0,cost:0};
-
-  stock[name].cost = ((stock[name].qty*stock[name].cost)+(qty*cost))/(stock[name].qty+qty);
-  stock[name].qty += qty;
-
-  localStorage.setItem("stock",JSON.stringify(stock));
-  renderStock();
-}
-
-// ===== عرض المخزون =====
-function renderStock(){
-  stockBody.innerHTML="";
-  Object.keys(stock).forEach(k=>{
-    stockBody.innerHTML+=`
-      <tr>
-        <td>${k}</td>
-        <td>${stock[k].qty}</td>
-        <td>${stock[k].cost.toFixed(2)}</td>
-      </tr>
-    `;
-  });
-}
-renderStock();
-
-// ===== مصروفات =====
-let expenses = JSON.parse(localStorage.getItem("expenses")||"[]");
-
-function addExpense(){
-  expenses.push(+expAmount.value);
-  localStorage.setItem("expenses",JSON.stringify(expenses));
-  totalExpenses = expenses.reduce((a,b)=>a+b,0);
-  updateReports();
-}
-
-// ===== تقارير =====
-function updateReports(){
-  repSales.innerText = totalSales;
-  repExpenses.innerText = totalExpenses;
-  repNet.innerText = totalSales - totalExpenses;
-}
-
-// ===== حفظ محلي =====
-function saveLocal(){
-  localStorage.setItem("salesTotal", totalSales);
-}
-</script>
-  <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
 </script>
-  <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("service-worker.js");
-  });
-}
-</script>
-<script>
-const USERNAME = "admin";
-const PASSWORD = "1234";
 
-function login(){
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("password").value;
-
-  if(u === USERNAME && p === PASSWORD){
-    localStorage.setItem("logged","1");
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("app").classList.remove("hidden");
-  } else {
-    alert("بيانات الدخول غير صحيحة");
-  }
-}
-
-function logout(){
-  localStorage.removeItem("logged");
-  location.reload();
-}
-
-// فتح تلقائي لو مسجل
-if(localStorage.getItem("logged")==="1"){
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("app").classList.remove("hidden");
-}
-</script>
-<script>
-console.log("JS Loaded");
-
-function login(){
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("password").value;
-
-  if(u === "admin" && p === "1234"){
-    localStorage.setItem("logged","1");
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("app").classList.remove("hidden");
-  } else {
-    alert("اسم المستخدم أو كلمة المرور خطأ");
-  }
-}
-
-function logout(){
-  localStorage.removeItem("logged");
-  location.reload();
-}
-
-window.onload = function(){
-  if(localStorage.getItem("logged")==="1"){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("app").classList.remove("hidden");
-  }
-}
-</script>
+</body>
+</html>
