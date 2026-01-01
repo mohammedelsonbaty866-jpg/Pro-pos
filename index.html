@@ -1,134 +1,158 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>POS Pro | سوبر ماركت</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>POS Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- CSS -->
-<link rel="stylesheet" href="css/style.css">
-
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/app.css">
 </head>
+
 <body>
 
-<header class="header">
-  <h1>POS Pro</h1>
-  <span class="shop-name">سوبر ماركت</span>
+<header>
+  🧾 POS Pro – نظام نقاط بيع احترافي
 </header>
 
-<nav class="nav">
-  <button onclick="App.show('sales')" class="active">المبيعات</button>
-  <button onclick="App.show('purchases')">المشتريات</button>
-  <button onclick="App.show('stock')">المخزون</button>
-  <button onclick="App.show('agents')">المناديب</button>
-  <button onclick="App.show('reports')">التقارير</button>
+<nav>
+  <button class="active" onclick="showPage('sales', this)">المبيعات</button>
+  <button onclick="showPage('purchases', this)">المشتريات</button>
+  <button onclick="showPage('agents', this)">المناديب</button>
+  <button onclick="showPage('reports', this)">التقارير</button>
 </nav>
 
-<main>
+<!-- ================== SALES ================== -->
+<div id="sales" class="page">
 
-  <!-- SALES -->
-  <section id="sales" class="screen">
-    <h2>فاتورة بيع</h2>
+  <div class="box">
+    <h3>فاتورة بيع</h3>
+    <input id="saleItem" placeholder="اسم الصنف">
+    <input id="saleQty" type="number" placeholder="الكمية" value="1">
+    <input id="salePrice" type="number" placeholder="سعر الوحدة">
+    <button class="primary" onclick="addSale()">➕ إضافة</button>
+  </div>
 
-    <select id="saleAgent"></select>
-    <input id="saleName" placeholder="اسم الصنف">
-    <input id="saleQty" type="number" placeholder="الكمية">
-    <input id="salePrice" type="number" placeholder="سعر البيع">
+  <div class="box">
+    <h3>تفاصيل الفاتورة</h3>
+    <div id="salesList" class="list"></div>
+    <hr>
+    <p><b>الإجمالي:</b> <span id="salesTotal">0</span></p>
+    <button class="primary" onclick="window.print()">🖨️ طباعة الفاتورة</button>
+  </div>
 
-    <button class="primary" onclick="Sales.add()">إضافة بيع</button>
+</div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>المندوب</th>
-          <th>الصنف</th>
-          <th>الكمية</th>
-          <th>الإجمالي</th>
-        </tr>
-      </thead>
-      <tbody id="salesTable"></tbody>
-    </table>
+<!-- ================== PURCHASES ================== -->
+<div id="purchases" class="page hidden">
 
-    <div class="total">
-      إجمالي المبيعات: <span id="salesTotal">0</span>
-    </div>
-  </section>
+  <div class="box">
+    <h3>مشتريات</h3>
+    <input id="buyItem" placeholder="اسم الصنف">
+    <input id="buyQty" type="number" placeholder="الكمية" value="1">
+    <input id="buyPrice" type="number" placeholder="سعر الشراء">
+    <button class="primary" onclick="addPurchase()">➕ إضافة</button>
+  </div>
 
-  <!-- PURCHASES -->
-  <section id="purchases" class="screen hidden">
-    <h2>المشتريات</h2>
+  <div class="box">
+    <h3>سجل المشتريات</h3>
+    <div id="purchaseList" class="list"></div>
+  </div>
 
-    <input id="buyName" placeholder="اسم الصنف">
-    <input id="buyQty" type="number" placeholder="الكمية">
-    <input id="buyCost" type="number" placeholder="سعر الشراء">
+</div>
 
-    <button class="primary" onclick="Purchases.add()">إضافة شراء</button>
-  </section>
+<!-- ================== AGENTS ================== -->
+<div id="agents" class="page hidden">
 
-  <!-- STOCK -->
-  <section id="stock" class="screen hidden">
-    <h2>المخزون</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>الصنف</th>
-          <th>الكمية</th>
-          <th>تكلفة الشراء</th>
-        </tr>
-      </thead>
-      <tbody id="stockTable"></tbody>
-    </table>
-  </section>
-
-  <!-- AGENTS -->
-  <section id="agents" class="screen hidden">
-    <h2>المناديب</h2>
-
+  <div class="box">
+    <h3>المناديب</h3>
     <input id="agentName" placeholder="اسم المندوب">
-    <button class="primary" onclick="Agents.add()">إضافة مندوب</button>
+    <button class="primary" onclick="addAgent()">➕ إضافة مندوب</button>
+  </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>المندوب</th>
-          <th>إجمالي المبيعات</th>
-        </tr>
-      </thead>
-      <tbody id="agentsTable"></tbody>
-    </table>
-  </section>
+  <div class="box">
+    <h3>قائمة المناديب</h3>
+    <div id="agentsList" class="list"></div>
+  </div>
 
-  <!-- REPORTS -->
-  <section id="reports" class="screen hidden">
-    <h2>التقارير</h2>
+</div>
 
-    <p>إجمالي المبيعات: <b id="reportSales">0</b></p>
-    <p>إجمالي التكلفة: <b id="reportCost">0</b></p>
-    <p>صافي الربح: <b id="reportNet">0</b></p>
+<!-- ================== REPORTS ================== -->
+<div id="reports" class="page hidden">
 
-    <h3>مبيعات حسب المندوب</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>المندوب</th>
-          <th>الإجمالي</th>
-        </tr>
-      </thead>
-      <tbody id="reportAgents"></tbody>
-    </table>
-  </section>
+  <div class="box">
+    <h3>التقارير</h3>
 
-</main>
+    <div class="report-item">
+      <span>إجمالي المبيعات</span>
+      <b id="rSales">0</b>
+    </div>
 
-<!-- JS -->
-<script src="js/data.js"></script>
-<script src="js/stock.js"></script>
-<script src="js/purchases.js"></script>
-<script src="js/sales.js"></script>
-<script src="js/agents.js"></script>
-<script src="js/reports.js"></script>
-<script src="js/app.js"></script>
+    <div class="report-item">
+      <span>إجمالي المشتريات</span>
+      <b id="rBuys">0</b>
+    </div>
+
+    <div class="report-item">
+      <span>صافي الربح</span>
+      <b id="rNet">0</b>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================== JS ================== -->
+<script>
+/* NAV */
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* DATA */
+let sales = [];
+let purchases = [];
+let agents = [];
+
+/* SALES */
+function addSale() {
+  let qty = +saleQty.value;
+  let price = +salePrice.value;
+  let total = qty * price;
+
+  sales.push(total);
+  salesList.innerHTML += `<div>${saleItem.value} × ${qty} = ${total}</div>`;
+  updateTotals();
+}
+
+/* PURCHASES */
+function addPurchase() {
+  let total = buyQty.value * buyPrice.value;
+  purchases.push(total);
+  purchaseList.innerHTML += `<div>${buyItem.value} = ${total}</div>`;
+  updateTotals();
+}
+
+/* AGENTS */
+function addAgent() {
+  agents.push(agentName.value);
+  agentsList.innerHTML += `<div>${agentName.value}</div>`;
+  agentName.value = '';
+}
+
+/* REPORTS */
+function updateTotals() {
+  let s = sales.reduce((a,b)=>a+b,0);
+  let p = purchases.reduce((a,b)=>a+b,0);
+
+  salesTotal.innerText = s;
+  rSales.innerText = s;
+  rBuys.innerText = p;
+  rNet.innerText = s - p;
+}
+</script>
 
 </body>
 </html>
