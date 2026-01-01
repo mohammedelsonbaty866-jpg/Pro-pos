@@ -8,7 +8,7 @@
 body{font-family:tahoma;background:#f4f6f8;margin:0}
 header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
 .box{background:#fff;margin:15px;padding:15px;border-radius:6px}
-input,button{width:100%;padding:10px;margin-top:8px}
+input,button,select{width:100%;padding:10px;margin-top:8px}
 button.primary{background:#0d6efd;color:#fff;border:none}
 .hidden{display:none}
 nav{display:flex;background:#fff;border-bottom:1px solid #ddd}
@@ -16,6 +16,7 @@ nav button{flex:1;padding:10px;border:none;background:none}
 nav button.active{background:#0d6efd;color:#fff}
 .list div{border-bottom:1px dashed #ccc;padding:5px}
 .admin{background:#198754;color:#fff}
+.stat{background:#eef;padding:10px;margin:5px 0;border-radius:4px}
 </style>
 </head>
 
@@ -27,7 +28,7 @@ nav button.active{background:#0d6efd;color:#fff}
 <div id="loginBox" class="box">
 <h3>🔐 تسجيل الدخول</h3>
 <input id="loginUser" placeholder="اسم المستخدم">
-<input id="loginPass" type="password" placeholder="كلمة المرور">
+<input id="loginPass" type="password">
 <button class="primary" onclick="login()">دخول</button>
 </div>
 
@@ -38,9 +39,11 @@ nav button.active{background:#0d6efd;color:#fff}
 <button class="active" onclick="show('sales',this)">المبيعات</button>
 <button onclick="show('reports',this)">التقارير</button>
 <button id="agentsBtn" onclick="show('agents',this)">المندوبين</button>
+  <button onclick="show('expenses',this)">المصروفات</button>
 <button onclick="logout()">خروج</button>
 </nav>
 
+<!-- SALES -->
 <div id="sales" class="box">
 <h3>🧾 فاتورة بيع</h3>
 <input id="saleName" placeholder="الصنف">
@@ -52,140 +55,159 @@ nav button.active{background:#0d6efd;color:#fff}
 <button onclick="printInvoice()">🖨️ طباعة</button>
 </div>
 
+<!-- REPORTS -->
 <div id="reports" class="box hidden">
 <h3>📊 التقارير</h3>
-<p>إجمالي المبيعات: <b id="rSales">0</b></p>
+
+<div class="stat">عدد الفواتير: <b id="rCount">0</b></div>
+<div class="stat">إجمالي المبيعات: <b id="rTotal">0</b></div>
+
+<h4>📅 تقرير يومي</h4>
+<input type="date" id="repDate">
+<button onclick="dailyReport()">عرض</button>
+<div id="dailyResult"></div>
+
+<h4>📆 تقرير شهري</h4>
+<select id="repMonth">
+<option value="0">يناير</option>
+<option value="1">فبراير</option>
+<option value="2">مارس</option>
+<option value="3">أبريل</option>
+<option value="4">مايو</option>
+<option value="5">يونيو</option>
+<option value="6">يوليو</option>
+<option value="7">أغسطس</option>
+<option value="8">سبتمبر</option>
+<option value="9">أكتوبر</option>
+<option value="10">نوفمبر</option>
+<option value="11">ديسمبر</option>
+</select>
+<button onclick="monthlyReport()">عرض</button>
+<div id="monthlyResult"></div>
+
+<h4>👤 حسب المندوب (مدير)</h4>
+<div id="agentReport"></div>
 </div>
 
+<!-- AGENTS -->
 <div id="agents" class="box hidden">
 <h3>👥 إدارة المندوبين</h3>
 <input id="aName" placeholder="اسم المندوب">
 <input id="aUser" placeholder="اسم المستخدم">
 <input id="aPass" placeholder="كلمة المرور">
-<button class="primary admin" onclick="addAgent()">➕ إضافة مندوب</button>
+<button class="primary admin" onclick="addAgent()">➕ إضافة</button>
 <div id="agentList" class="list"></div>
 </div>
+<!-- EXPENSES -->
+<div id="expenses" class="box hidden">
+<h3>💸 المصروفات</h3>
 
+<input id="expDesc" placeholder="وصف المصروف">
+<input id="expAmount" type="number" placeholder="المبلغ">
+
+<button class="primary" onclick="addExpense()">➕ إضافة مصروف</button>
+
+<div id="expenseList" class="list"></div>
+</div>
 </div>
 
 <script>
-/* ===== DATA ===== */
 let agents = JSON.parse(localStorage.getItem("agents")||"[]");
 let sales  = JSON.parse(localStorage.getItem("sales")||"[]");
 let current = JSON.parse(localStorage.getItem("current")||"null");
 
-/* ===== DEFAULT ADMIN ===== */
 if(!agents.length){
-agents.push({
-id:1,
-name:"المدير",
-user:"admin",
-pass:"admin",
-role:"admin"
-});
+agents.push({id:1,name:"المدير",user:"admin",pass:"admin",role:"admin"});
 save();
 }
 
-/* ===== LOGIN ===== */
+/* AUTH */
 function login(){
 let u=loginUser.value,p=loginPass.value;
-let user=agents.find(a=>a.user==u && a.pass==p);
-if(!user){alert("بيانات خطأ");return;}
+let user=agents.find(a=>a.user==u&&a.pass==p);
+if(!user){alert("خطأ");return;}
 current=user;
 localStorage.setItem("current",JSON.stringify(user));
 start();
 }
-
-function logout(){
-localStorage.removeItem("current");
-location.reload();
-}
-
+function logout(){localStorage.removeItem("current");location.reload();}
 function start(){
 loginBox.classList.add("hidden");
 app.classList.remove("hidden");
-header.innerText=`👤 ${current.name} (${current.role})`;
-
-if(current.role!=="admin"){
-agentsBtn.style.display="none";
-}
-renderSales();
-renderAgents();
+header.innerText=`👤 ${current.name}`;
+if(current.role!=="admin") agentsBtn.style.display="none";
+renderSales();renderAgents();renderReports();
 }
 
-/* ===== AGENTS (ADMIN ONLY) ===== */
-function addAgent(){
-agents.push({
-id:Date.now(),
-name:aName.value,
-user:aUser.value,
-pass:aPass.value,
-role:"agent"
-});
-save();
-renderAgents();
-aName.value=aUser.value=aPass.value="";
-}
-
-function renderAgents(){
-agentList.innerHTML="";
-agents.forEach(a=>{
-agentList.innerHTML+=`<div>${a.name} - ${a.role}</div>`;
-});
-}
-
-/* ===== SALES ===== */
+/* SALES */
 function addSale(){
 let total=saleQty.value*salePrice.value;
-sales.push({
-agent:current.id,
-total
-});
-save();
-renderSales();
+sales.push({agent:current.id,total,date:new Date().toISOString()});
+save();renderSales();renderReports();
 }
-
 function renderSales(){
 salesList.innerHTML="";
 let sum=0;
-
-let list = current.role==="admin"
-? sales
-: sales.filter(s=>s.agent===current.id);
-
-list.forEach(s=>{
-sum+=s.total;
-salesList.innerHTML+=`<div>${s.total}</div>`;
-});
-
+sales.filter(s=>current.role==="admin"||s.agent===current.id)
+.forEach(s=>{sum+=s.total;salesList.innerHTML+=`<div>${s.total}</div>`});
 salesTotal.innerText=sum;
-rSales.innerText=sum;
 }
 
-/* ===== PRINT ===== */
-function printInvoice(){
-let w=window.open("");
-w.document.write("<h2>فاتورة</h2>");
-sales.filter(s=>s.agent===current.id)
-.forEach(s=>w.document.write(`<p>${s.total}</p>`));
-w.print();
+/* REPORTS */
+function renderReports(){
+let list=sales.filter(s=>current.role==="admin"||s.agent===current.id);
+rCount.innerText=list.length;
+rTotal.innerText=list.reduce((a,b)=>a+b.total,0);
+
+agentReport.innerHTML="";
+if(current.role==="admin"){
+agents.filter(a=>a.role==="agent").forEach(a=>{
+let t=sales.filter(s=>s.agent===a.id)
+.reduce((x,y)=>x+y.total,0);
+agentReport.innerHTML+=`<div>${a.name}: ${t}</div>`;
+});
+}
 }
 
-/* ===== NAV ===== */
+function dailyReport(){
+let d=repDate.value;
+let sum=sales.filter(s=>s.date.startsWith(d)
+&&(current.role==="admin"||s.agent===current.id))
+.reduce((a,b)=>a+b.total,0);
+dailyResult.innerText="الإجمالي: "+sum;
+}
+
+function monthlyReport(){
+let m=repMonth.value;
+let sum=sales.filter(s=>new Date(s.date).getMonth()==m
+&&(current.role==="admin"||s.agent===current.id))
+.reduce((a,b)=>a+b.total,0);
+monthlyResult.innerText="الإجمالي: "+sum;
+}
+
+/* AGENTS */
+function addAgent(){
+agents.push({id:Date.now(),name:aName.value,user:aUser.value,pass:aPass.value,role:"agent"});
+save();renderAgents();
+}
+function renderAgents(){
+agentList.innerHTML="";
+agents.forEach(a=>agentList.innerHTML+=`<div>${a.name} - ${a.role}</div>`);
+}
+
+/* UI */
 function show(id,b){
 document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
 b.classList.add("active");
 }
-
-/* ===== SAVE ===== */
+function printInvoice(){window.print();}
 function save(){
 localStorage.setItem("agents",JSON.stringify(agents));
 localStorage.setItem("sales",JSON.stringify(sales));
 }
 
-/* AUTO LOGIN */
 if(current) start();
 </script>
 
