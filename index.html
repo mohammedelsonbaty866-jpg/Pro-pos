@@ -2,9 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>POS Pro - Offline</title>
+<title>POS Pro Offline</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{margin:0;font-family:tahoma;background:#f4f6f8}
 header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
@@ -18,9 +17,7 @@ button.primary{background:#0d6efd;color:#fff;border:none}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ccc;padding:6px;text-align:center}
 .total{font-size:18px;font-weight:bold;margin-top:10px}
-@media print{
-  nav,header,button{display:none}
-}
+@media print{nav,header,button{display:none}}
 </style>
 </head>
 
@@ -30,7 +27,7 @@ th,td{border:1px solid #ccc;padding:6px;text-align:center}
 
 <nav>
 <button class="active" onclick="show('sales',this)">مبيعات</button>
-<button onclick="show('purchases',this)">مشتريات</button>
+<button onclick="show('customers',this)">عملاء</button>
 <button onclick="show('agents',this)">مندوبين</button>
 <button onclick="show('stock',this)">مخزون</button>
 <button onclick="show('reports',this)">تقارير</button>
@@ -39,30 +36,30 @@ th,td{border:1px solid #ccc;padding:6px;text-align:center}
 <!-- SALES -->
 <div id="sales" class="box">
 <h3>فاتورة بيع</h3>
+<select id="customer"></select>
+<select id="agent"></select>
 
-<select id="agentSelect"></select>
-
-<input id="itemName" placeholder="الصنف">
-<input id="itemQty" type="number" value="1">
-<input id="itemPrice" type="number" placeholder="السعر">
-<button class="primary" onclick="addSale()">➕ إضافة</button>
+<input id="item" placeholder="الصنف">
+<input id="qty" type="number" value="1">
+<input id="price" type="number" placeholder="السعر">
+<button class="primary" onclick="addItem()">إضافة</button>
 
 <table>
-<thead><tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr></thead>
-<tbody id="saleBody"></tbody>
+<thead><tr><th>الصنف</th><th>كمية</th><th>إجمالي</th></tr></thead>
+<tbody id="items"></tbody>
 </table>
 
-<div class="total">الإجمالي: <span id="saleTotal">0</span></div>
-<button class="primary" onclick="saveInvoice()">💾 حفظ</button>
-<button onclick="window.print()">🖨️ طباعة</button>
+<div class="total">الإجمالي: <span id="total">0</span></div>
+<button class="primary" onclick="saveInvoice()">حفظ</button>
+<button onclick="window.print()">طباعة</button>
 </div>
 
-<!-- PURCHASES -->
-<div id="purchases" class="box hidden">
-<h3>مشتريات</h3>
-<input id="buyName" placeholder="الصنف">
-<input id="buyQty" type="number" value="1">
-<button class="primary" onclick="addPurchase()">إضافة للمخزون</button>
+<!-- CUSTOMERS -->
+<div id="customers" class="box hidden">
+<h3>العملاء</h3>
+<input id="custName" placeholder="اسم العميل">
+<button class="primary" onclick="addCustomer()">إضافة</button>
+<ul id="custList"></ul>
 </div>
 
 <!-- AGENTS -->
@@ -87,79 +84,61 @@ th,td{border:1px solid #ccc;padding:6px;text-align:center}
 </div>
 
 <script>
-// ===== DATA =====
-let sales=[], invoices=JSON.parse(localStorage.invoices||"[]");
+let invoices=JSON.parse(localStorage.invoices||"[]");
+let customers=JSON.parse(localStorage.customers||'["عميل نقدي"]');
 let agents=JSON.parse(localStorage.agents||'["مندوب عام"]');
 let stock=JSON.parse(localStorage.stock||"{}");
+let cart=[];
 
-// ===== UI =====
 function show(id,b){
- document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
- document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
- b.classList.add("active");
+document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
+b.classList.add("active");
 }
 
-// ===== AGENTS =====
-function loadAgents(){
- agentSelect.innerHTML="";
- agentList.innerHTML="";
- agents.forEach(a=>{
-  agentSelect.innerHTML+=`<option>${a}</option>`;
-  agentList.innerHTML+=`<li>${a}</li>`;
- });
- localStorage.agents=JSON.stringify(agents);
+function load(){
+customer.innerHTML="";customers.forEach(c=>customer.innerHTML+=`<option>${c}</option>`);
+agent.innerHTML="";agents.forEach(a=>agent.innerHTML+=`<option>${a}</option>`);
+custList.innerHTML="";customers.forEach(c=>custList.innerHTML+=`<li>${c}</li>`);
+agentList.innerHTML="";agents.forEach(a=>agentList.innerHTML+=`<li>${a}</li>`);
+renderStock();renderReports();
 }
-function addAgent(){
- agents.push(agentName.value);
- agentName.value="";
- loadAgents();
-}
-loadAgents();
+load();
 
-// ===== SALES =====
-function addSale(){
- let t=itemQty.value*itemPrice.value;
- sales.push(t);
- saleBody.innerHTML+=`<tr><td>${itemName.value}</td><td>${itemQty.value}</td><td>${itemPrice.value}</td><td>${t}</td></tr>`;
- saleTotal.innerText=sales.reduce((a,b)=>a+b,0);
+function addCustomer(){customers.push(custName.value);custName.value="";localStorage.customers=JSON.stringify(customers);load();}
+function addAgent(){agents.push(agentName.value);agentName.value="";localStorage.agents=JSON.stringify(agents);load();}
+
+function addItem(){
+let t=qty.value*price.value;
+cart.push(t);
+items.innerHTML+=`<tr><td>${item.value}</td><td>${qty.value}</td><td>${t}</td></tr>`;
+total.innerText=cart.reduce((a,b)=>a+b,0);
+stock[item.value]=(stock[item.value]||0)-qty.value;
+localStorage.stock=JSON.stringify(stock);
 }
 
-// ===== SAVE INVOICE =====
 function saveInvoice(){
- invoices.push({
-  agent:agentSelect.value,
-  total:+saleTotal.innerText,
-  date:new Date().toLocaleString()
- });
- localStorage.invoices=JSON.stringify(invoices);
- sales=[];saleBody.innerHTML="";saleTotal.innerText=0;
- alert("تم الحفظ");
- renderReports();
+invoices.push({
+no:invoices.length+1,
+customer:customer.value,
+agent:agent.value,
+total:+total.innerText,
+date:new Date().toLocaleString()
+});
+localStorage.invoices=JSON.stringify(invoices);
+cart=[];items.innerHTML="";total.innerText=0;
+renderReports();alert("تم حفظ الفاتورة");
 }
 
-// ===== PURCHASE =====
-function addPurchase(){
- stock[buyName.value]=(stock[buyName.value]||0)+(+buyQty.value);
- localStorage.stock=JSON.stringify(stock);
- renderStock();
-}
-
-// ===== STOCK =====
 function renderStock(){
- stockList.innerHTML="";
- for(let i in stock){
-  stockList.innerHTML+=`<li>${i} : ${stock[i]}</li>`;
- }
+stockList.innerHTML="";
+for(let i in stock)stockList.innerHTML+=`<li>${i} : ${stock[i]}</li>`;
 }
-renderStock();
-
-// ===== REPORTS =====
 function renderReports(){
- rSales.innerText=invoices.reduce((a,b)=>a+b.total,0);
- rCount.innerText=invoices.length;
+rSales.innerText=invoices.reduce((a,b)=>a+b.total,0);
+rCount.innerText=invoices.length;
 }
-renderReports();
 </script>
 
 </body>
