@@ -16,7 +16,7 @@ nav button.active{background:var(--main);color:#fff}
 .hidden{display:none}
 input,select,button{width:100%;padding:10px;margin-top:8px}
 button.primary{background:var(--main);color:#fff;border:none}
-table{width:100%;border-collapse:collapse}
+table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ddd;padding:6px;text-align:center}
 .total{font-size:18px;font-weight:bold}
 </style>
@@ -38,7 +38,6 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 
 <!-- APP -->
 <div id="app" class="hidden">
-
 <nav id="navBar"></nav>
 
 <div class="container">
@@ -46,6 +45,13 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 <!-- SALES -->
 <div id="sales" class="card">
 <h3>فاتورة بيع</h3>
+
+<select id="customerSelect"></select>
+<select id="payType">
+  <option value="cash">💰 كاش</option>
+  <option value="credit">🧾 آجل</option>
+</select>
+
 <input id="itemName" placeholder="اسم الصنف">
 <input id="itemQty" type="number" value="1">
 <input id="itemPrice" type="number" placeholder="السعر">
@@ -59,13 +65,30 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 </table>
 
 <p class="total">الإجمالي: <span id="grandTotal">0</span> ج</p>
-<button class="primary" onclick="printInvoice()">🖨️ طباعة</button>
+<button class="primary" onclick="finishInvoice()">💾 حفظ الفاتورة</button>
+</div>
+
+<!-- CUSTOMERS -->
+<div id="customers" class="card hidden">
+<h3>العملاء</h3>
+<input id="custName" placeholder="اسم العميل">
+<input id="custPhone" placeholder="موبايل">
+<button class="primary" onclick="addCustomer()">➕ إضافة عميل</button>
+
+<table>
+<thead>
+<tr><th>الاسم</th><th>الموبايل</th><th>الرصيد</th></tr>
+</thead>
+<tbody id="custTable"></tbody>
+</table>
 </div>
 
 <!-- REPORTS -->
 <div id="reports" class="card hidden">
-<h3>تقارير المبيعات</h3>
-<div id="reportList"></div>
+<h3>التقارير</h3>
+<p>إجمالي المبيعات: <b id="rSales">0</b></p>
+<p>آجل العملاء: <b id="rCredit">0</b></p>
+<p>صافي الربح: <b id="rNet">0</b></p>
 </div>
 
 </div>
@@ -75,46 +98,45 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 // ===== USERS =====
 const USERS=[
  {u:"admin",p:"1234",role:"admin"},
- {u:"agent1",p:"1234",role:"agent"},
- {u:"agent2",p:"1234",role:"agent"}
+ {u:"agent1",p:"1234",role:"agent"}
 ];
 
 let currentUser=null;
 let invoice=[];
-let allInvoices=JSON.parse(localStorage.getItem("invoices")||"[]");
+
+let invoices=JSON.parse(localStorage.getItem("invoices")||"[]");
+let customers=JSON.parse(localStorage.getItem("customers")||"[]");
 
 // ===== LOGIN =====
 function login(){
   let u=loginUser.value;
   let p=loginPass.value;
   let user=USERS.find(x=>x.u===u && x.p===p);
-  if(!user) return alert("بيانات غير صحيحة");
+  if(!user)return alert("بيانات غير صحيحة");
   currentUser=user;
   localStorage.setItem("user",JSON.stringify(user));
   startApp();
 }
+function logout(){localStorage.removeItem("user");location.reload();}
+let saved=localStorage.getItem("user");
+if(saved){currentUser=JSON.parse(saved);startApp();}
 
 function startApp(){
   loginBox.classList.add("hidden");
   app.classList.remove("hidden");
   buildNav();
+  renderCustomers();
+  loadCustomerSelect();
   renderReports();
 }
 
-function logout(){
-  localStorage.removeItem("user");
-  location.reload();
-}
-
-let saved=localStorage.getItem("user");
-if(saved){currentUser=JSON.parse(saved);startApp();}
-
 // ===== NAV =====
 function buildNav(){
-  navBar.innerHTML="";
-  navBar.innerHTML+=`<button class="active" onclick="show('sales',this)">المبيعات</button>`;
+  navBar.innerHTML=`<button class="active" onclick="show('sales',this)">المبيعات</button>`;
   if(currentUser.role==="admin"){
-    navBar.innerHTML+=`<button onclick="show('reports',this)">التقارير</button>`;
+    navBar.innerHTML+=`
+      <button onclick="show('customers',this)">العملاء</button>
+      <button onclick="show('reports',this)">التقارير</button>`;
   }
   navBar.innerHTML+=`<button onclick="logout()">خروج</button>`;
 }
@@ -128,52 +150,71 @@ function show(id,btn){
 
 // ===== SALES =====
 function addItem(){
-  let name=itemName.value;
-  let qty=+itemQty.value;
-  let price=+itemPrice.value;
-  if(!name||!price)return alert("اكمل البيانات");
-
-  invoice.push({name,qty,price});
-  renderInvoice();
+  invoice.push({
+    name:itemName.value,
+    qty:+itemQty.value,
+    price:+itemPrice.value
+  });
   itemName.value="";itemQty.value=1;itemPrice.value="";
+  renderInvoice();
 }
 
 function renderInvoice(){
   invoiceBody.innerHTML="";
   let total=0;
   invoice.forEach(i=>{
-    let t=i.qty*i.price;
-    total+=t;
-    invoiceBody.innerHTML+=`
-    <tr>
-      <td>${i.name}</td>
-      <td>${i.qty}</td>
-      <td>${i.price}</td>
-      <td>${t}</td>
-    </tr>`;
+    let t=i.qty*i.price; total+=t;
+    invoiceBody.innerHTML+=`<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.price}</td><td>${t}</td></tr>`;
   });
   grandTotal.innerText=total;
 }
 
-function printInvoice(){
-  allInvoices.push({
-    agent:currentUser.u,
-    total:+grandTotal.innerText,
-    date:new Date().toLocaleString()
-  });
-  localStorage.setItem("invoices",JSON.stringify(allInvoices));
-  window.print();
+function finishInvoice(){
+  let total=+grandTotal.innerText;
+  let custId=customerSelect.value;
+  let type=payType.value;
+
+  invoices.push({total,type,customer:custId});
+  localStorage.setItem("invoices",JSON.stringify(invoices));
+
+  if(type==="credit"){
+    customers[custId].balance+=total;
+    localStorage.setItem("customers",JSON.stringify(customers));
+  }
+
   invoice=[];renderInvoice();
+  renderCustomers();renderReports();
+}
+
+// ===== CUSTOMERS =====
+function addCustomer(){
+  customers.push({name:custName.value,phone:custPhone.value,balance:0});
+  localStorage.setItem("customers",JSON.stringify(customers));
+  custName.value="";custPhone.value="";
+  renderCustomers();loadCustomerSelect();
+}
+
+function renderCustomers(){
+  custTable.innerHTML="";
+  customers.forEach(c=>{
+    custTable.innerHTML+=`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.balance}</td></tr>`;
+  });
+}
+
+function loadCustomerSelect(){
+  customerSelect.innerHTML="";
+  customers.forEach((c,i)=>{
+    customerSelect.innerHTML+=`<option value="${i}">${c.name}</option>`;
+  });
 }
 
 // ===== REPORTS =====
 function renderReports(){
-  if(currentUser.role!=="admin")return;
-  reportList.innerHTML="";
-  allInvoices.forEach(i=>{
-    reportList.innerHTML+=`
-      <div>مندوب: ${i.agent} | ${i.total} ج | ${i.date}</div>`;
-  });
+  let s=invoices.reduce((a,b)=>a+b.total,0);
+  let credit=customers.reduce((a,b)=>a+b.balance,0);
+  rSales.innerText=s;
+  rCredit.innerText=credit;
+  rNet.innerText=s-credit;
 }
 </script>
 
