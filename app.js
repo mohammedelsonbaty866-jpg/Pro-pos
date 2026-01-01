@@ -157,3 +157,73 @@ function addExpense(expense) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 }
+// public/js/app.js
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import {
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+window.showLogin = function () {
+  document.getElementById("loginPage").style.display = "block";
+  document.getElementById("app").style.display = "none";
+};
+
+window.showApp = function () {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+};
+
+// التنقل بين الصفحات
+window.showSection = function (id, btn) {
+  document.querySelectorAll(".box").forEach(d => d.style.display = "none");
+  document.getElementById(id).style.display = "block";
+
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+};
+
+// فحص الاشتراك
+async function checkSubscription(uid) {
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return false;
+
+  const data = snap.data();
+  const now = new Date();
+
+  if (data.plan === "trial" && data.trialEndsAt) {
+    return data.trialEndsAt.toDate() > now;
+  }
+
+  if (data.subscriptionEndsAt) {
+    return data.subscriptionEndsAt.toDate() > now;
+  }
+
+  return false;
+}
+
+// مراقبة تسجيل الدخول
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    showLogin();
+    return;
+  }
+
+  const active = await checkSubscription(user.uid);
+
+  if (!active) {
+    document.body.innerHTML = `
+      <div style="text-align:center;margin-top:100px">
+        <h2>🚫 انتهى الاشتراك</h2>
+        <p>برجاء تجديد الاشتراك</p>
+        <button onclick="logout()">تسجيل خروج</button>
+      </div>
+    `;
+    return;
+  }
+
+  showApp();
+});
