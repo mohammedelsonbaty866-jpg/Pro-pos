@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>POS PRO | Super Market</title>
+<title>POS PRO - سوبر ماركت</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="css/app.css">
@@ -10,93 +10,72 @@
 
 <body>
 
-<header>
-  🛒 POS PRO - Super Market
-</header>
+<header>🛒 POS PRO – سوبر ماركت</header>
 
 <nav>
   <button class="active" onclick="showPage('sales',this)">المبيعات</button>
   <button onclick="showPage('purchases',this)">المشتريات</button>
-  <button onclick="showPage('stock',this)">الجرد</button>
-  <button onclick="showPage('agents',this)">المندوبين</button>
+  <button onclick="showPage('inventory',this)">المخزون</button>
+  <button onclick="showPage('agents',this)">المناديب</button>
   <button onclick="showPage('reports',this)">التقارير</button>
 </nav>
 
-<!-- ===== SALES ===== -->
+<!-- SALES -->
 <div id="sales" class="page">
-
   <div class="box">
     <h3>فاتورة بيع</h3>
-
     <input id="saleName" placeholder="اسم الصنف">
+    <input id="saleQty" type="number" placeholder="الكمية">
     <input id="salePrice" type="number" placeholder="السعر">
-    <input id="saleQty" type="number" value="1">
+    <button class="primary" onclick="addSale()">إضافة</button>
 
-    <button class="primary" onclick="openScanner('sale')">📷 باركود</button>
-    <button class="primary" onclick="addSale()">➕ إضافة</button>
+    <button onclick="startBarcode('saleName')" class="primary">
+      📷 قراءة باركود
+    </button>
 
     <div id="salesList" class="list"></div>
   </div>
 </div>
 
-<!-- ===== PURCHASES ===== -->
+<!-- PURCHASES -->
 <div id="purchases" class="page hidden">
   <div class="box">
     <h3>مشتريات</h3>
-
     <input id="buyName" placeholder="اسم الصنف">
-    <input id="buyPrice" type="number" placeholder="السعر">
-    <input id="buyQty" type="number" value="1">
-
-    <button class="primary" onclick="openScanner('buy')">📷 باركود</button>
-    <button class="primary" onclick="addPurchase()">➕ إضافة</button>
-
-    <div id="buyList" class="list"></div>
+    <input id="buyQty" type="number">
+    <input id="buyPrice" type="number">
+    <button class="primary" onclick="addPurchase()">إضافة</button>
   </div>
 </div>
 
-<!-- ===== STOCK ===== -->
-<div id="stock" class="page hidden">
+<!-- INVENTORY -->
+<div id="inventory" class="page hidden">
   <div class="box">
-    <h3>جرد المخزون</h3>
-    <div id="stockList" class="list"></div>
+    <h3>المخزون</h3>
+    <div id="inventoryList"></div>
   </div>
 </div>
 
-<!-- ===== AGENTS ===== -->
+<!-- AGENTS -->
 <div id="agents" class="page hidden">
   <div class="box">
-    <h3>المندوبين</h3>
-
+    <h3>المناديب</h3>
     <input id="agentName" placeholder="اسم المندوب">
-    <button class="primary" onclick="addAgent()">➕ إضافة</button>
-
-    <div id="agentsList" class="list"></div>
+    <button class="primary" onclick="addAgent()">إضافة</button>
+    <div id="agentList"></div>
   </div>
 </div>
 
-<!-- ===== REPORTS ===== -->
+<!-- REPORTS -->
 <div id="reports" class="page hidden">
   <div class="box">
     <h3>التقارير</h3>
-
     <div class="report-item">المبيعات <b id="rSales">0</b></div>
     <div class="report-item">المشتريات <b id="rBuys">0</b></div>
     <div class="report-item">الربح <b id="rNet">0</b></div>
-
-    <button class="primary" onclick="window.print()">🖨️ طباعة</button>
   </div>
 </div>
 
-<!-- ===== BARCODE CAMERA ===== -->
-<div id="scanner" class="hidden scanner">
-  <video id="video"></video>
-  <button class="danger" onclick="closeScanner()">❌ إغلاق</button>
-</div>
-
-<script src="js/storage.js"></script>
-<script src="js/barcode.js"></script>
 <script src="js/app.js"></script>
-
 </body>
 </html>
