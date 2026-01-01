@@ -115,3 +115,20 @@ function resetAllData() {
   localStorage.clear();
   location.reload();
 }
+<script>
+/* ========= DATA STORAGE ========= */
+
+const DB = {
+  sales: JSON.parse(localStorage.getItem("sales") || "[]"),
+  purchases: JSON.parse(localStorage.getItem("purchases") || "[]"),
+  expenses: JSON.parse(localStorage.getItem("expenses") || "[]"),
+  agents: JSON.parse(localStorage.getItem("agents") || "[]")
+};
+
+function saveDB() {
+  localStorage.setItem("sales", JSON.stringify(DB.sales));
+  localStorage.setItem("purchases", JSON.stringify(DB.purchases));
+  localStorage.setItem("expenses", JSON.stringify(DB.expenses));
+  localStorage.setItem("agents", JSON.stringify(DB.agents));
+}
+</script>
