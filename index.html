@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>POS Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header>POS Pro - نظام مبيعات</header>
+
+<div id="login" class="box">
+  <h3>تسجيل الدخول</h3>
+  <input id="email" placeholder="الإيميل">
+  <input id="pass" type="password" placeholder="كلمة المرور">
+  <button onclick="login()">دخول</button>
+</div>
+
+<div id="app" class="hidden">
+<nav>
+<button onclick="show('sales')">مبيعات</button>
+<button onclick="show('purchases')">مشتريات</button>
+<button onclick="show('expenses')">مصروفات</button>
+<button onclick="show('reports')">تقارير</button>
+<button onclick="logout()">خروج</button>
+</nav>
+
+<section id="sales" class="box">
+<h3>مبيعات</h3>
+<input id="sName" placeholder="الصنف">
+<input id="sQty" type="number">
+<input id="sPrice" type="number">
+<button onclick="addSale()">إضافة</button>
+<div id="salesList"></div>
+</section>
+
+<section id="purchases" class="box hidden">
+<h3>مشتريات</h3>
+<input id="pName">
+<input id="pQty" type="number">
+<input id="pPrice" type="number">
+<button onclick="addPurchase()">إضافة</button>
+<div id="purchaseList"></div>
+</section>
+
+<section id="expenses" class="box hidden">
+<h3>مصروفات</h3>
+<input id="eDesc">
+<input id="eAmount" type="number">
+<button onclick="addExpense()">إضافة</button>
+<div id="expenseList"></div>
+</section>
+
+<section id="reports" class="box hidden">
+<h3>تقارير</h3>
+<p>المبيعات: <span id="tSales">0</span></p>
+<p>المشتريات: <span id="tPurchases">0</span></p>
+<p>المصروفات: <span id="tExpenses">0</span></p>
+<p>الربح: <span id="tNet">0</span></p>
+</section>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
