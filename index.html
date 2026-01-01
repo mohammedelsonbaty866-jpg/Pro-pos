@@ -7,14 +7,15 @@
 
 <style>
 body{font-family:tahoma;background:#f4f6f8;margin:0}
-header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
-.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
-input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
-button.primary{background:#0d6efd;color:#fff;border:none}
-nav{display:flex;background:#fff}
-nav button{flex:1;padding:10px;border:none;background:none}
+header{background:#0d6efd;color:#fff;padding:15px;text-align:center;font-size:20px}
+nav{display:flex;background:#fff;border-bottom:1px solid #ddd}
+nav button{flex:1;padding:10px;border:none;background:none;font-size:14px}
 nav button.active{background:#0d6efd;color:#fff}
+.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
+input,select,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
+button.primary{background:#0d6efd;color:#fff;border:none}
 .hidden{display:none}
+.list div{padding:5px 0;border-bottom:1px dashed #ccc}
 </style>
 </head>
 
@@ -22,119 +23,134 @@ nav button.active{background:#0d6efd;color:#fff}
 
 <header>📊 POS Pro</header>
 
-<!-- LOGIN -->
-<div id="loginBox" class="box">
-  <h3>تسجيل الدخول</h3>
-  <input id="loginEmail" placeholder="البريد الإلكتروني">
-  <input id="loginPass" type="password" placeholder="كلمة المرور">
-  <button class="primary" onclick="login()">دخول</button>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-
 <nav>
 <button class="active" onclick="show('sales',this)">المبيعات</button>
 <button onclick="show('purchases',this)">المشتريات</button>
-<button onclick="show('expenses',this)">المصروفات</button>
+<button onclick="show('agents',this)">المندوبين</button>
 <button onclick="show('reports',this)">التقارير</button>
-<button onclick="logout()">خروج</button>
 </nav>
 
+<!-- ================= SALES ================= -->
 <div id="sales" class="box">
-<h3>فاتورة بيع</h3>
-<input id="saleName" placeholder="اسم الصنف">
-<input id="saleQty" type="number" value="1">
-<input id="salePrice" type="number" placeholder="السعر">
-<button class="primary" onclick="addSale()">➕ إضافة</button>
-<div id="salesList"></div>
-  <div id="sales" class="box">
-<h3>فاتورة بيع</h3>
+<h3>🧾 فاتورة بيع</h3>
 
 <input id="saleName" placeholder="اسم الصنف">
 <input id="saleQty" type="number" value="1">
 <input id="salePrice" type="number" placeholder="السعر">
 
+<select id="saleAgent"></select>
+
 <button class="primary" onclick="addSale()">➕ إضافة</button>
+<button onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
 
-<button onclick="printInvoice()" style="margin-top:10px">
-🖨️ طباعة الفاتورة
-</button>
-
-<div id="salesList"></div>
-</div>
+<div id="salesList" class="list"></div>
+<p>الإجمالي: <b id="salesTotal">0</b></p>
 </div>
 
+<!-- ================= PURCHASES ================= -->
 <div id="purchases" class="box hidden">
-<h3>مشتريات</h3>
+<h3>📦 المشتريات</h3>
+
 <input id="buyName" placeholder="اسم الصنف">
 <input id="buyQty" type="number" value="1">
-<input id="buyPrice" type="number" placeholder="السعر">
+<input id="buyPrice" type="number" placeholder="سعر الشراء">
+
 <button class="primary" onclick="addPurchase()">➕ إضافة</button>
-<div id="purchaseList"></div>
+
+<div id="purchaseList" class="list"></div>
+<p>إجمالي المشتريات: <b id="buyTotal">0</b></p>
 </div>
 
-<div id="expenses" class="box hidden">
-<h3>مصروفات</h3>
-<input id="expDesc" placeholder="الوصف">
-<input id="expAmount" type="number" placeholder="المبلغ">
-<button class="primary" onclick="addExpense()">➕ إضافة</button>
-<div id="expenseList"></div>
+<!-- ================= AGENTS ================= -->
+<div id="agents" class="box hidden">
+<h3>👨‍💼 المندوبين</h3>
+
+<input id="agentName" placeholder="اسم المندوب">
+<button class="primary" onclick="addAgent()">➕ إضافة</button>
+
+<div id="agentList" class="list"></div>
 </div>
 
+<!-- ================= REPORTS ================= -->
 <div id="reports" class="box hidden">
-<h3>التقارير</h3>
-<p>المبيعات: <b id="tSales">0</b></p>
-<p>المشتريات: <b id="tBuys">0</b></p>
-<p>المصروفات: <b id="tExp">0</b></p>
-<p>صافي الربح: <b id="tNet">0</b></p>
-</div>
+<h3>📊 التقارير</h3>
 
+<p>إجمالي المبيعات: <b id="rSales">0</b></p>
+<p>إجمالي المشتريات: <b id="rBuys">0</b></p>
+<p>صافي الربح: <b id="rNet">0</b></p>
+
+<h4>مبيعات المندوبين</h4>
+<div id="agentReport"></div>
 </div>
 
 <script>
-// ===== AUTH (محلي مؤقت) =====
-const USER = { email:"admin@pos.com", pass:"1234" };
-
-function login(){
-  if(loginEmail.value===USER.email && loginPass.value===USER.pass){
-    localStorage.setItem("logged","1");
-    startApp();
-  }else{
-    alert("بيانات غير صحيحة");
-  }
-}
-
-function logout(){
-  localStorage.removeItem("logged");
-  location.reload();
-}
-
-function startApp(){
-  loginBox.classList.add("hidden");
-  app.classList.remove("hidden");
-}
-
-if(localStorage.getItem("logged")==="1") startApp();
-
-// ===== APP =====
-let sales=[],buys=[],expenses=[];
-
+/* ====== NAV ====== */
 function show(id,b){
-document.querySelectorAll('#app .box').forEach(x=>x.classList.add("hidden"));
+document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
 b.classList.add("active");
 }
-function addSale(){
-  if(!salePrice.value) return alert("ادخل السعر");
-  let t = saleQty.value * salePrice.value;
-  sales.push(t);
-  salesList.innerHTML += `<div>${saleName.value || "صنف"} = ${t}</div>`;
-  update();
+
+/* ====== DATA ====== */
+let sales=[],buys=[],agents=[];
+
+/* ====== AGENTS ====== */
+function addAgent(){
+if(!agentName.value) return;
+agents.push({name:agentName.value,total:0});
+agentName.value="";
+renderAgents();
 }
 
+function renderAgents(){
+agentList.innerHTML="";
+saleAgent.innerHTML="";
+agents.forEach((a,i)=>{
+agentList.innerHTML+=`<div>${a.name}</div>`;
+saleAgent.innerHTML+=`<option value="${i}">${a.name}</option>`;
+});
+}
 
+/* ====== SALES ====== */
+function addSale(){
+let qty=+saleQty.value, price=+salePrice.value;
+let total=qty*price;
+let agent=agents[saleAgent.value];
+
+sales.push({name:saleName.value,total,agent});
+agent.total+=total;
+
+salesList.innerHTML+=`<div>${saleName.value} × ${qty} = ${total}</div>`;
+update();
+}
+
+function printInvoice(){
+let html=`<html><head><title>فاتورة</title>
+<style>
+body{font-family:tahoma;direction:rtl;padding:20px}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid #000;padding:6px;text-align:center}
+</style>
+</head><body>
+<h2 style="text-align:center">فاتورة بيع</h2>
+<table>
+<tr><th>الصنف</th><th>القيمة</th></tr>`;
+
+sales.forEach(s=>{
+html+=`<tr><td>${s.name}</td><td>${s.total}</td></tr>`;
+});
+
+html+=`</table>
+<h3>الإجمالي: ${sales.reduce((a,b)=>a+b.total,0)}</h3>
+</body></html>`;
+
+let w=window.open("");
+w.document.write(html);
+w.print();
+}
+
+/* ====== PURCHASES ====== */
 function addPurchase(){
 let t=buyQty.value*buyPrice.value;
 buys.push(t);
@@ -142,111 +158,23 @@ purchaseList.innerHTML+=`<div>${buyName.value} = ${t}</div>`;
 update();
 }
 
-function addExpense(){
-expenses.push(+expAmount.value);
-expenseList.innerHTML+=`<div>${expDesc.value} = ${expAmount.value}</div>`;
-update();
-}
-
+/* ====== REPORTS ====== */
 function update(){
-let s=sales.reduce((a,b)=>a+b,0);
+let s=sales.reduce((a,b)=>a+b.total,0);
 let b=buys.reduce((a,b)=>a+b,0);
-let e=expenses.reduce((a,b)=>a+b,0);
-tSales.innerText=s;
-tBuys.innerText=b;
-tExp.innerText=e;
-tNet.innerText=s-b-e;
+salesTotal.innerText=s;
+buyTotal.innerText=b;
+
+rSales.innerText=s;
+rBuys.innerText=b;
+rNet.innerText=s-b;
+
+agentReport.innerHTML="";
+agents.forEach(a=>{
+agentReport.innerHTML+=`<div>${a.name} : ${a.total}</div>`;
+});
 }
 </script>
-  
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-</script>
- <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("✅ Service Worker Ready"))
-      .catch(err => console.log("SW Error", err));
-  });
-}
-</script> 
-  function printInvoice(){
-  let html = `
-  <html>
-  <head>
-    <title>فاتورة بيع</title>
-    <style>
-      body{font-family:tahoma;direction:rtl;padding:20px}
-      h2{text-align:center}
-      table{width:100%;border-collapse:collapse;margin-top:20px}
-      th,td{border:1px solid #000;padding:8px;text-align:center}
-    </style>
-  </head>
-  <body>
-    <h2>فاتورة بيع</h2>
-    <table>
-      <tr>
-        <th>الصنف</th>
-        <th>القيمة</th>
-      </tr>
-  `;
 
-  let total = 0;
-  document.querySelectorAll("#salesList div").forEach(row=>{
-    html += `<tr><td>${row.innerText}</td><td></td></tr>`;
-    let num = row.innerText.match(/\d+$/);
-    if(num) total += +num[0];
-  });
-
-  html += `
-    </table>
-    <h3>الإجمالي: ${total}</h3>
-  </body>
-  </html>
-  function printInvoice(){
-  let html = `
-  <html>
-  <head>
-    <title>فاتورة بيع</title>
-    <style>
-      body{font-family:tahoma;direction:rtl;padding:20px}
-      h2{text-align:center}
-      table{width:100%;border-collapse:collapse;margin-top:20px}
-      th,td{border:1px solid #000;padding:8px;text-align:center}
-    </style>
-  </head>
-  <body>
-    <h2>فاتورة بيع</h2>
-    <table>
-      <tr>
-        <th>الصنف</th>
-        <th>القيمة</th>
-      </tr>
-  `;
-
-  let total = 0;
-  document.querySelectorAll("#salesList div").forEach(row=>{
-    html += `<tr><td>${row.innerText}</td><td></td></tr>`;
-    let num = row.innerText.match(/\d+$/);
-    if(num) total += +num[0];
-  });
-
-  html += `
-    </table>
-    <h3>الإجمالي: ${total}</h3>
-  </body>
-  </html>
-  `;
-
-  let w = window.open("", "", "width=800,height=600");
-  w.document.write(html);
-  w.document.close();
-  w.print();
-}
 </body>
 </html>
-</script>
