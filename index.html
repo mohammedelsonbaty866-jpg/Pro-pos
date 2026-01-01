@@ -158,13 +158,18 @@ nav button.active{
 <div class="container">
 
 <!-- ===== تسجيل الدخول ===== -->
+<!-- LOGIN -->
 <div id="loginBox" class="box">
-  <h3>🔐 تسجيل الدخول</h3>
-  <input id="loginUser" placeholder="اسم المستخدم">
-  <input id="loginPass" type="password" placeholder="كلمة المرور">
+  <h3>تسجيل الدخول</h3>
+  <input id="username" placeholder="اسم المستخدم">
+  <input id="password" type="password" placeholder="كلمة المرور">
   <button class="primary" onclick="login()">دخول</button>
 </div>
 
+<!-- APP -->
+<div id="app" class="hidden">
+  <!-- البرنامج كله هنا -->
+</div>
 <!-- ===== التطبيق ===== -->
 <div id="app" class="hidden">
 
@@ -435,5 +440,33 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js");
   });
+}
+</script>
+<script>
+const USERNAME = "admin";
+const PASSWORD = "1234";
+
+function login(){
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+
+  if(u === USERNAME && p === PASSWORD){
+    localStorage.setItem("logged","1");
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("app").classList.remove("hidden");
+  } else {
+    alert("بيانات الدخول غير صحيحة");
+  }
+}
+
+function logout(){
+  localStorage.removeItem("logged");
+  location.reload();
+}
+
+// فتح تلقائي لو مسجل
+if(localStorage.getItem("logged")==="1"){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("app").classList.remove("hidden");
 }
 </script>
