@@ -147,3 +147,9 @@ function printInvoice() {
 window.onload = () => {
   updateReports();
 };
+<script>
+/* ========= APP INIT ========= */
+document.addEventListener("DOMContentLoaded", () => {
+  renderSales();
+});
+</script>
