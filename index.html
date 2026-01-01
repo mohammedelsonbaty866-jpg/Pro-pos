@@ -470,3 +470,31 @@ if(localStorage.getItem("logged")==="1"){
   document.getElementById("app").classList.remove("hidden");
 }
 </script>
+<script>
+console.log("JS Loaded");
+
+function login(){
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+
+  if(u === "admin" && p === "1234"){
+    localStorage.setItem("logged","1");
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("app").classList.remove("hidden");
+  } else {
+    alert("اسم المستخدم أو كلمة المرور خطأ");
+  }
+}
+
+function logout(){
+  localStorage.removeItem("logged");
+  location.reload();
+}
+
+window.onload = function(){
+  if(localStorage.getItem("logged")==="1"){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("app").classList.remove("hidden");
+  }
+}
+</script>
