@@ -2,219 +2,193 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>POS Pro</title>
+<title>POS Pro Ultimate</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{--main:#0d6efd;--bg:#f4f6f8}
-body{margin:0;font-family:tahoma;background:var(--bg)}
-header{background:var(--main);color:#fff;padding:15px;text-align:center}
-nav{display:flex;background:#fff;border-bottom:1px solid #ddd}
-nav button{flex:1;padding:12px;border:none;background:none}
-nav button.active{background:var(--main);color:#fff}
-.container{padding:15px}
-.card{background:#fff;padding:15px;border-radius:6px;margin-bottom:15px}
+body{margin:0;font-family:tahoma;background:#f4f6f8}
+header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
+nav{display:flex;background:#fff}
+nav button{flex:1;padding:10px;border:none;background:none}
+nav button.active{background:#0d6efd;color:#fff}
+.box{background:#fff;margin:10px;padding:15px;border-radius:6px}
 .hidden{display:none}
 input,select,button{width:100%;padding:10px;margin-top:8px}
-button.primary{background:var(--main);color:#fff;border:none}
+button.primary{background:#0d6efd;color:#fff;border:none}
 table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ddd;padding:6px;text-align:center}
-.total{font-size:18px;font-weight:bold}
+th,td{border:1px solid #ccc;padding:5px;text-align:center}
 </style>
 </head>
 
 <body>
 
-<header>📊 POS Pro</header>
+<header>📊 POS Pro – النسخة الكاملة</header>
 
 <!-- LOGIN -->
-<div id="loginBox" class="container">
-  <div class="card">
-    <h3>تسجيل الدخول</h3>
-    <input id="loginUser" placeholder="اسم المستخدم">
-    <input id="loginPass" type="password" placeholder="كلمة المرور">
-    <button class="primary" onclick="login()">دخول</button>
-  </div>
+<div id="loginBox" class="box">
+<h3>تسجيل الدخول</h3>
+<input id="u" placeholder="اسم المستخدم">
+<input id="p" type="password" placeholder="كلمة المرور">
+<button class="primary" onclick="login()">دخول</button>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
-<nav id="navBar"></nav>
 
-<div class="container">
+<nav>
+<button class="active" onclick="show('sales',this)">مبيعات</button>
+<button onclick="show('customers',this)">عملاء</button>
+<button onclick="show('stock',this)">مخزون</button>
+<button onclick="show('collect',this)">تحصيل</button>
+<button onclick="show('reports',this)">تقارير</button>
+<button onclick="logout()">خروج</button>
+</nav>
 
 <!-- SALES -->
-<div id="sales" class="card">
+<div id="sales" class="box">
 <h3>فاتورة بيع</h3>
 
-<select id="customerSelect"></select>
-<select id="payType">
-  <option value="cash">💰 كاش</option>
-  <option value="credit">🧾 آجل</option>
+<select id="cust"></select>
+<select id="pay">
+<option value="cash">كاش</option>
+<option value="credit">آجل</option>
 </select>
 
-<input id="itemName" placeholder="اسم الصنف">
-<input id="itemQty" type="number" value="1">
-<input id="itemPrice" type="number" placeholder="السعر">
-<button class="primary" onclick="addItem()">➕ إضافة</button>
+<input id="item" placeholder="الصنف">
+<input id="qty" type="number" value="1">
+<input id="price" placeholder="السعر">
+<button class="primary" onclick="addSale()">إضافة</button>
 
-<table>
-<thead>
-<tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr>
-</thead>
-<tbody id="invoiceBody"></tbody>
-</table>
-
-<p class="total">الإجمالي: <span id="grandTotal">0</span> ج</p>
-<button class="primary" onclick="finishInvoice()">💾 حفظ الفاتورة</button>
+<div id="inv"></div>
+<p><b>الإجمالي:</b> <span id="total">0</span></p>
+<button class="primary" onclick="saveInvoice()">حفظ</button>
 </div>
 
 <!-- CUSTOMERS -->
-<div id="customers" class="card hidden">
+<div id="customers" class="box hidden">
 <h3>العملاء</h3>
-<input id="custName" placeholder="اسم العميل">
-<input id="custPhone" placeholder="موبايل">
-<button class="primary" onclick="addCustomer()">➕ إضافة عميل</button>
+<input id="cn" placeholder="اسم العميل">
+<button class="primary" onclick="addCustomer()">إضافة</button>
+<div id="custList"></div>
+</div>
 
-<table>
-<thead>
-<tr><th>الاسم</th><th>الموبايل</th><th>الرصيد</th></tr>
-</thead>
-<tbody id="custTable"></tbody>
-</table>
+<!-- STOCK -->
+<div id="stock" class="box hidden">
+<h3>المخزون</h3>
+<input id="sn" placeholder="اسم الصنف">
+<input id="sq" type="number" placeholder="الكمية">
+<button class="primary" onclick="addStock()">إضافة مخزون</button>
+<div id="stockList"></div>
+</div>
+
+<!-- COLLECT -->
+<div id="collect" class="box hidden">
+<h3>تحصيل آجل</h3>
+<select id="cCust"></select>
+<input id="payAmount" type="number" placeholder="المبلغ">
+<button class="primary" onclick="collect()">تحصيل</button>
 </div>
 
 <!-- REPORTS -->
-<div id="reports" class="card hidden">
+<div id="reports" class="box hidden">
 <h3>التقارير</h3>
-<p>إجمالي المبيعات: <b id="rSales">0</b></p>
-<p>آجل العملاء: <b id="rCredit">0</b></p>
-<p>صافي الربح: <b id="rNet">0</b></p>
+<p>مبيعات: <b id="rs">0</b></p>
+<p>آجل: <b id="rc">0</b></p>
+<p>صافي: <b id="rn">0</b></p>
+<button onclick="window.print()">🖨 طباعة</button>
 </div>
 
-</div>
 </div>
 
 <script>
-// ===== USERS =====
-const USERS=[
- {u:"admin",p:"1234",role:"admin"},
- {u:"agent1",p:"1234",role:"agent"}
-];
+const USERS=[{u:"admin",p:"1234"},{u:"agent1",p:"1234"}];
+let sales=[],invoice=[],customers=JSON.parse(localStorage.customers||"[]");
+let stock=JSON.parse(localStorage.stock||"[]");
 
-let currentUser=null;
-let invoice=[];
-
-let invoices=JSON.parse(localStorage.getItem("invoices")||"[]");
-let customers=JSON.parse(localStorage.getItem("customers")||"[]");
-
-// ===== LOGIN =====
 function login(){
-  let u=loginUser.value;
-  let p=loginPass.value;
-  let user=USERS.find(x=>x.u===u && x.p===p);
-  if(!user)return alert("بيانات غير صحيحة");
-  currentUser=user;
-  localStorage.setItem("user",JSON.stringify(user));
-  startApp();
+let user=USERS.find(x=>x.u===u.value&&x.p===p.value);
+if(!user)return alert("خطأ");
+localStorage.user=JSON.stringify(user);
+start();
 }
-function logout(){localStorage.removeItem("user");location.reload();}
-let saved=localStorage.getItem("user");
-if(saved){currentUser=JSON.parse(saved);startApp();}
+function logout(){localStorage.clear();location.reload();}
+if(localStorage.user)start();
 
-function startApp(){
-  loginBox.classList.add("hidden");
-  app.classList.remove("hidden");
-  buildNav();
-  renderCustomers();
-  loadCustomerSelect();
-  renderReports();
+function start(){
+loginBox.classList.add("hidden");
+app.classList.remove("hidden");
+renderCustomers();renderStock();loadCust();
 }
 
-// ===== NAV =====
-function buildNav(){
-  navBar.innerHTML=`<button class="active" onclick="show('sales',this)">المبيعات</button>`;
-  if(currentUser.role==="admin"){
-    navBar.innerHTML+=`
-      <button onclick="show('customers',this)">العملاء</button>
-      <button onclick="show('reports',this)">التقارير</button>`;
-  }
-  navBar.innerHTML+=`<button onclick="logout()">خروج</button>`;
+function show(id,b){
+document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
+b.classList.add("active");
 }
 
-function show(id,btn){
-  document.querySelectorAll('.card').forEach(x=>x.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-  document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
-  btn.classList.add("active");
+// SALES
+function addSale(){
+let t=qty.value*price.value;
+invoice.push(t);
+inv.innerHTML+=`<div>${item.value} = ${t}</div>`;
+total.innerText=invoice.reduce((a,b)=>a+b,0);
 }
 
-// ===== SALES =====
-function addItem(){
-  invoice.push({
-    name:itemName.value,
-    qty:+itemQty.value,
-    price:+itemPrice.value
-  });
-  itemName.value="";itemQty.value=1;itemPrice.value="";
-  renderInvoice();
+function saveInvoice(){
+let t=+total.innerText;
+sales.push(t);
+if(pay.value==="credit"){
+customers[cust.value].bal=(customers[cust.value].bal||0)+t;
+}
+localStorage.sales=JSON.stringify(sales);
+localStorage.customers=JSON.stringify(customers);
+invoice=[];inv.innerHTML="";total.innerText=0;
+renderReports();
 }
 
-function renderInvoice(){
-  invoiceBody.innerHTML="";
-  let total=0;
-  invoice.forEach(i=>{
-    let t=i.qty*i.price; total+=t;
-    invoiceBody.innerHTML+=`<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.price}</td><td>${t}</td></tr>`;
-  });
-  grandTotal.innerText=total;
-}
-
-function finishInvoice(){
-  let total=+grandTotal.innerText;
-  let custId=customerSelect.value;
-  let type=payType.value;
-
-  invoices.push({total,type,customer:custId});
-  localStorage.setItem("invoices",JSON.stringify(invoices));
-
-  if(type==="credit"){
-    customers[custId].balance+=total;
-    localStorage.setItem("customers",JSON.stringify(customers));
-  }
-
-  invoice=[];renderInvoice();
-  renderCustomers();renderReports();
-}
-
-// ===== CUSTOMERS =====
+// CUSTOMERS
 function addCustomer(){
-  customers.push({name:custName.value,phone:custPhone.value,balance:0});
-  localStorage.setItem("customers",JSON.stringify(customers));
-  custName.value="";custPhone.value="";
-  renderCustomers();loadCustomerSelect();
+customers.push({name:cn.value,bal:0});
+localStorage.customers=JSON.stringify(customers);
+renderCustomers();loadCust();
 }
 
 function renderCustomers(){
-  custTable.innerHTML="";
-  customers.forEach(c=>{
-    custTable.innerHTML+=`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.balance}</td></tr>`;
-  });
+custList.innerHTML="";
+customers.forEach(c=>custList.innerHTML+=`<div>${c.name} | ${c.bal||0}</div>`);
 }
 
-function loadCustomerSelect(){
-  customerSelect.innerHTML="";
-  customers.forEach((c,i)=>{
-    customerSelect.innerHTML+=`<option value="${i}">${c.name}</option>`;
-  });
+function loadCust(){
+cust.innerHTML="";cCust.innerHTML="";
+customers.forEach((c,i)=>{
+cust.innerHTML+=`<option value="${i}">${c.name}</option>`;
+cCust.innerHTML+=`<option value="${i}">${c.name}</option>`;
+});
 }
 
-// ===== REPORTS =====
+// STOCK
+function addStock(){
+stock.push({name:sn.value,qty:+sq.value});
+localStorage.stock=JSON.stringify(stock);
+renderStock();
+}
+function renderStock(){
+stockList.innerHTML="";
+stock.forEach(s=>stockList.innerHTML+=`<div>${s.name} = ${s.qty}</div>`);
+}
+
+// COLLECT
+function collect(){
+customers[cCust.value].bal-=+payAmount.value;
+localStorage.customers=JSON.stringify(customers);
+renderCustomers();renderReports();
+}
+
+// REPORTS
 function renderReports(){
-  let s=invoices.reduce((a,b)=>a+b.total,0);
-  let credit=customers.reduce((a,b)=>a+b.balance,0);
-  rSales.innerText=s;
-  rCredit.innerText=credit;
-  rNet.innerText=s-credit;
+let s=sales.reduce((a,b)=>a+b,0);
+let c=customers.reduce((a,b)=>a+(b.bal||0),0);
+rs.innerText=s;rc.innerText=c;rn.innerText=s-c;
 }
 </script>
 
