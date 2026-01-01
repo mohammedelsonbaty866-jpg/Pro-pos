@@ -5,20 +5,13 @@
   <title>PosPro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Firebase v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-  <!-- App -->
-  <link rel="stylesheet" href="css/app.css" />
-  <script defer src="js/firebase.js"></script>
-  <script defer src="js/auth.js"></script>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d6efd" />
 
   <style>
     body {
-      margin: 0;
       font-family: Tahoma, Arial;
+      margin: 0;
       background: #f4f6f8;
     }
 
@@ -26,23 +19,23 @@
       background: #0d6efd;
       color: #fff;
       padding: 15px;
-      font-size: 18px;
       text-align: center;
+      font-size: 18px;
     }
 
     nav {
       display: flex;
-      background: #ffffff;
+      flex-wrap: wrap;
+      background: #fff;
       border-bottom: 1px solid #ddd;
     }
 
     nav button {
       flex: 1;
-      padding: 12px;
+      padding: 10px;
       border: none;
       background: none;
       font-size: 14px;
-      cursor: pointer;
     }
 
     nav button.active {
@@ -57,363 +50,128 @@
     .box {
       background: #fff;
       padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 6px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    button.primary {
+      background: #0d6efd;
+      color: #fff;
+      border: none;
+    }
+
+    .center {
+      text-align: center;
+      margin-top: 100px;
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  PosPro – نظام محاسبي سحابي
-</header>
+<!-- صفحة تسجيل الدخول -->
+<div id="loginPage" class="center">
+  <h2>تسجيل الدخول</h2>
+  <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
+  <input type="password" id="loginPassword" placeholder="كلمة المرور" />
+  <button onclick="loginUser()">دخول</button>
+</div>
 
-<nav>
-  <button class="active" onclick="showSection('dashboard', this)">الرئيسية</button>
-  <button onclick="showSection('sales', this)">المبيعات</button>
-  <button onclick="showSection('purchases', this)">المشتريات</button>
-  <button onclick="showSection('expenses', this)">المصروفات</button>
-  <button onclick="showSection('reports', this)">التقارير</button>
-  <button onclick="showSection('settings', this)">الإعدادات</button>
-</nav>
+<!-- التطبيق -->
+<div id="app" style="display:none">
 
-<div class="container">
+  <header>PosPro</header>
 
-  <div id="dashboard" class="box">
-    <h3>مرحبًا 👋</h3>
-    <p>نظام PosPro يعمل أونلاين وبدون إنترنت.</p>
+  <nav>
+    <button class="active" onclick="showSection('dashboard',this)">الرئيسية</button>
+    <button onclick="showSection('sales',this)">المبيعات</button>
+    <button onclick="showSection('purchases',this)">المشتريات</button>
+    <button onclick="showSection('expenses',this)">المصروفات</button>
+    <button onclick="showSection('reports',this)">التقارير</button>
+    <button onclick="showSection('settings',this)">الإعدادات</button>
+    <button onclick="logout()">خروج</button>
+  </nav>
+
+  <div class="container">
+
+    <!-- الرئيسية -->
+    <div id="dashboard" class="box">
+      <h3>👋 مرحبًا بك</h3>
+      <p>نظام PosPro لإدارة المبيعات والمحاسبة</p>
+    </div>
+
+    <!-- المبيعات -->
+    <div id="sales" class="box" style="display:none">
+      <h3>🧾 المبيعات</h3>
+      <input placeholder="اسم الصنف">
+      <input type="number" placeholder="الكمية">
+      <input type="number" placeholder="السعر">
+      <button class="primary">حفظ فاتورة</button>
+      <div id="salesList"></div>
+    </div>
+
+    <!-- المشتريات -->
+    <div id="purchases" class="box" style="display:none">
+      <h3>📦 المشتريات</h3>
+      <input placeholder="اسم المورد / الصنف">
+      <input type="number" placeholder="الكمية">
+      <input type="number" placeholder="سعر الشراء">
+      <button class="primary">حفظ شراء</button>
+      <div id="purchasesList"></div>
+    </div>
+
+    <!-- المصروفات -->
+    <div id="expenses" class="box" style="display:none">
+      <h3>💸 المصروفات</h3>
+      <select>
+        <option>إيجار</option>
+        <option>كهرباء</option>
+        <option>رواتب</option>
+        <option>أخرى</option>
+      </select>
+      <input type="number" placeholder="المبلغ">
+      <button class="primary">إضافة مصروف</button>
+      <div id="expensesList"></div>
+    </div>
+
+    <!-- التقارير -->
+    <div id="reports" class="box" style="display:none">
+      <h3>📊 التقارير</h3>
+      <input type="date">
+      <input type="date">
+      <button>تقرير المبيعات</button>
+      <button>صافي الربح</button>
+      <div id="reportsResult"></div>
+    </div>
+
+    <!-- الإعدادات -->
+    <div id="settings" class="box" style="display:none">
+      <h3>⚙️ الإعدادات</h3>
+      <input placeholder="اسم النشاط">
+      <input placeholder="اسم المستخدم">
+      <select>
+        <option>بدون ضريبة</option>
+        <option>تفعيل الضريبة</option>
+      </select>
+      <button class="primary">حفظ الإعدادات</button>
+    </div>
+
   </div>
-
-<div id="sales" class="box" style="display:none">
-  <h3>🧾 فاتورة بيع</h3>
-
-  <label>اسم الصنف</label>
-  <input id="saleProduct" placeholder="اسم الصنف">
-
-  <label>الكمية</label>
-  <input id="saleQty" type="number" value="1">
-
-  <label>سعر الوحدة</label>
-  <input id="salePrice" type="number">
-
-  <button onclick="addItem()">➕ إضافة للفاتورة</button>
-
-  <hr>
-
-  <div id="invoiceItems"></div>
-
-  <p>الإجمالي: <b id="invoiceTotal">0</b></p>
-
-  <button class="primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
 </div>
 
-  <div id="purchases" class="box" style="display:none">
-    <h3>📦 المشتريات</h3>
-    <p>إدارة فواتير الشراء.</p>
-  </div>
-<div id="expenses" class="box" style="display:none">
-  <h3>💸 المصروفات</h3>
-
-  <label>نوع المصروف</label>
-  <select id="expenseType">
-    <option>إيجار</option>
-    <option>كهرباء</option>
-    <option>مياه</option>
-    <option>رواتب</option>
-    <option>مصاريف أخرى</option>
-  </select>
-
-  <label>الوصف</label>
-  <input id="expenseDesc" placeholder="وصف المصروف">
-
-  <label>المبلغ</label>
-  <input id="expenseAmount" type="number">
-
-  <button onclick="addExpense()">➕ إضافة مصروف</button>
-
-  <hr>
-
-  <div id="expenseList"></div>
-</div>
-  
-
-  <div id="reports" class="box" style="display:none">
-  <h3>📊 التقارير</h3>
-
-  <label>من تاريخ</label>
-  <input type="date" id="fromDate">
-
-  <label>إلى تاريخ</label>
-  <input type="date" id="toDate">
-
-  <button onclick="loadSalesReport()">📈 تقرير المبيعات</button>
-  <button onclick="loadProfitReport()">💰 صافي الربح</button>
-
-  <hr>
-
-  <div id="reportResult"></div>
-</div>
-
-  <div id="settings" class="box" style="display:none">
-    <h3>⚙️ الإعدادات</h3>
-    <button onclick="logout()">تسجيل الخروج</button>
-  </div>
-
-</div>
-
-<script>
-  function showSection(id, btn) {
-    document.querySelectorAll(".box").forEach(d => d.style.display = "none");
-    document.getElementById(id).style.display = "block";
-
-    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-  }
-
-  // حماية الصفحة
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) {
-      window.location.href = "login.html";
-    }
-  });
+<!-- Firebase Modules -->
+<script type="module">
+  import "./js/firebase.js";
+  import "./js/auth.js";
+  import "./js/app.js";
 </script>
 
 </body>
-  <script>
-let invoice = [];
-let db = firebase.firestore();
-let currentUser = null;
-
-firebase.auth().onAuthStateChanged(user => {
-  if (user) currentUser = user;
-});
-
-function addItem() {
-  const name = saleProduct.value.trim();
-  const qty = Number(saleQty.value);
-  const price = Number(salePrice.value);
-
-  if (!name || qty <= 0 || price <= 0) {
-    alert("أدخل بيانات صحيحة");
-    return;
-  }
-
-  invoice.push({
-    name,
-    qty,
-    price,
-    total: qty * price
-  });
-<div id="pricing" class="box">
-  <h2>خطط الاشتراك</h2>
-
-  <div class="plan">
-    <h3>شهري</h3>
-    <p>199 جنيه</p>
-    <button>اشترك</button>
-  </div>
-
-  <div class="plan">
-    <h3>سنوي</h3>
-    <p>1999 جنيه</p>
-    <button>اشترك</button>
-  </div>
-</div>
-  renderInvoice();
-
-  saleProduct.value = "";
-  saleQty.value = 1;
-  salePrice.value = "";
-}
-
-function renderInvoice() {
-  let total = 0;
-  invoiceItems.innerHTML = "";
-
-  invoice.forEach(item => {
-    total += item.total;
-    invoiceItems.innerHTML += `
-      <div>
-        ${item.name} × ${item.qty} = ${item.total}
-      </div>
-    `;
-  });
-
-  invoiceTotal.innerText = total.toFixed(2);
-}
-
-function saveInvoice() {
-  if (!currentUser) {
-    alert("غير مسجل دخول");
-    return;
-  }
-
-  if (invoice.length === 0) {
-    alert("الفاتورة فارغة");
-    return;
-  }
-
-  db.collection("users")
-    .doc(currentUser.uid)
-    .collection("invoices")
-    .add({
-      items: invoice,
-      total: Number(invoiceTotal.innerText),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      alert("تم حفظ الفاتورة ✅");
-      invoice = [];
-      renderInvoice();
-    })
-    .catch(err => {
-      alert("خطأ في الحفظ");
-      console.error(err);
-    });
-}
-</script>
-<script>
-function addExpense() {
-  if (!currentUser) {
-    alert("غير مسجل دخول");
-    return;
-  }
-
-  const type = expenseType.value;
-  const desc = expenseDesc.value.trim();
-  const amount = Number(expenseAmount.value);
-
-  if (!desc || amount <= 0) {
-    alert("أدخل بيانات صحيحة");
-    return;
-  }
-
-  db.collection("users")
-    .doc(currentUser.uid)
-    .collection("expenses")
-    .add({
-      type,
-      desc,
-      amount,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      alert("تم إضافة المصروف ✅");
-      expenseDesc.value = "";
-      expenseAmount.value = "";
-      loadExpenses();
-    });
-}
-
-function loadExpenses() {
-  if (!currentUser) return;
-
-  db.collection("users")
-    .doc(currentUser.uid)
-    .collection("expenses")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(snapshot => {
-      expenseList.innerHTML = "";
-      snapshot.forEach(doc => {
-        const e = doc.data();
-        expenseList.innerHTML += `
-          <div>
-            <b>${e.type}</b> - ${e.amount}<br>
-            <small>${e.desc}</small>
-          </div>
-        `;
-      });
-    });
-}
-
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    loadExpenses();
-  }
-});
-</script>
-<script>
-function isInRange(date, from, to) {
-  const d = date.toDate ? date.toDate() : new Date(date);
-  if (from && d < new Date(from)) return false;
-  if (to && d > new Date(to)) return false;
-  return true;
-}
-
-/* تقرير المبيعات */
-function loadSalesReport() {
-  if (!currentUser) return;
-
-  const from = fromDate.value;
-  const to = toDate.value;
-  let total = 0;
-
-  reportResult.innerHTML = "<h4>تقرير المبيعات</h4>";
-
-  db.collection("users")
-    .doc(currentUser.uid)
-    .collection("invoices")
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        const inv = doc.data();
-        if (isInRange(inv.createdAt, from, to)) {
-          total += inv.total;
-          reportResult.innerHTML += `
-            <div>
-              فاتورة: ${inv.total}
-            </div>
-          `;
-        }
-      });
-
-      reportResult.innerHTML += `<hr><b>إجمالي المبيعات: ${total}</b>`;
-    });
-}
-
-/* صافي الربح */
-function loadProfitReport() {
-  if (!currentUser) return;
-
-  const from = fromDate.value;
-  const to = toDate.value;
-  let salesTotal = 0;
-  let expensesTotal = 0;
-
-  const salesRef = db
-    .collection("users")
-    .doc(currentUser.uid)
-    .collection("invoices");
-
-  const expRef = db
-    .collection("users")
-    .doc(currentUser.uid)
-    .collection("expenses");
-
-  Promise.all([salesRef.get(), expRef.get()]).then(([salesSnap, expSnap]) => {
-    salesSnap.forEach(doc => {
-      const s = doc.data();
-      if (isInRange(s.createdAt, from, to)) {
-        salesTotal += s.total;
-      }
-    });
-
-    expSnap.forEach(doc => {
-      const e = doc.data();
-      if (isInRange(e.createdAt, from, to)) {
-        expensesTotal += e.amount;
-      }
-    });
-
-    reportResult.innerHTML = `
-      <h4>صافي الربح</h4>
-      <p>إجمالي المبيعات: ${salesTotal}</p>
-      <p>إجمالي المصروفات: ${expensesTotal}</p>
-      <hr>
-      <h3>الربح الصافي: ${salesTotal - expensesTotal}</h3>
-    `;
-  });
-}
-</script>
+</html>
