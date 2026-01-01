@@ -2,143 +2,225 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>POS Pro Offline</title>
+<title>POS Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:tahoma;background:#f4f6f8}
-header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
-nav{display:flex;background:#fff;border-bottom:1px solid #ddd}
-nav button{flex:1;padding:12px;border:none;background:none}
-nav button.active{background:#0d6efd;color:#fff}
-.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
+body{
+  font-family:tahoma;
+  background:#f4f6f8;
+  margin:0;
+}
+header{
+  background:#0d6efd;
+  color:#fff;
+  padding:15px;
+  text-align:center;
+  font-size:18px;
+}
+nav{
+  display:flex;
+  background:#fff;
+  border-bottom:1px solid #ddd;
+}
+nav button{
+  flex:1;
+  padding:12px;
+  border:none;
+  background:none;
+  font-size:14px;
+}
+nav button.active{
+  background:#0d6efd;
+  color:#fff;
+}
+.box{
+  background:#fff;
+  margin:15px;
+  padding:15px;
+  border-radius:6px;
+}
+input,select,button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  font-size:14px;
+}
+button.primary{
+  background:#0d6efd;
+  color:#fff;
+  border:none;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+table th,table td{
+  border:1px solid #ddd;
+  padding:6px;
+  font-size:13px;
+  text-align:center;
+}
+.total{
+  font-size:16px;
+  font-weight:bold;
+  margin-top:10px;
+}
 .hidden{display:none}
-input,select,button{width:100%;padding:10px;margin-top:8px}
-button.primary{background:#0d6efd;color:#fff;border:none}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;text-align:center}
-.total{font-size:18px;font-weight:bold;margin-top:10px}
-@media print{nav,header,button{display:none}}
 </style>
 </head>
 
 <body>
 
-<header>📊 POS Pro (Offline)</header>
+<header>📊 POS Pro – شركة واحدة (Offline)</header>
 
 <nav>
-<button class="active" onclick="show('sales',this)">مبيعات</button>
-<button onclick="show('customers',this)">عملاء</button>
-<button onclick="show('agents',this)">مندوبين</button>
-<button onclick="show('stock',this)">مخزون</button>
-<button onclick="show('reports',this)">تقارير</button>
+  <button class="active" onclick="showPage('sales',this)">المبيعات</button>
+  <button onclick="showPage('invoices',this)">الفواتير</button>
+  <button onclick="showPage('reports',this)">التقارير</button>
 </nav>
 
-<!-- SALES -->
+<!-- ================== SALES ================== -->
 <div id="sales" class="box">
-<h3>فاتورة بيع</h3>
-<select id="customer"></select>
-<select id="agent"></select>
+  <h3>فاتورة بيع جديدة</h3>
 
-<input id="item" placeholder="الصنف">
-<input id="qty" type="number" value="1">
-<input id="price" type="number" placeholder="السعر">
-<button class="primary" onclick="addItem()">إضافة</button>
+  <input id="itemName" placeholder="اسم الصنف">
+  <input id="itemQty" type="number" value="1" placeholder="الكمية">
+  <input id="itemPrice" type="number" placeholder="السعر">
 
-<table>
-<thead><tr><th>الصنف</th><th>كمية</th><th>إجمالي</th></tr></thead>
-<tbody id="items"></tbody>
-</table>
+  <button class="primary" onclick="addItem()">➕ إضافة للصنف</button>
 
-<div class="total">الإجمالي: <span id="total">0</span></div>
-<button class="primary" onclick="saveInvoice()">حفظ</button>
-<button onclick="window.print()">طباعة</button>
+  <table>
+    <thead>
+      <tr>
+        <th>الصنف</th>
+        <th>الكمية</th>
+        <th>السعر</th>
+        <th>الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody id="itemsTable"></tbody>
+  </table>
+
+  <div class="total">الإجمالي: <span id="invoiceTotal">0</span></div>
+
+  <button class="primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
 </div>
 
-<!-- CUSTOMERS -->
-<div id="customers" class="box hidden">
-<h3>العملاء</h3>
-<input id="custName" placeholder="اسم العميل">
-<button class="primary" onclick="addCustomer()">إضافة</button>
-<ul id="custList"></ul>
+<!-- ================== INVOICES ================== -->
+<div id="invoices" class="box hidden">
+  <h3>الفواتير المحفوظة</h3>
+  <div id="invoiceList"></div>
 </div>
 
-<!-- AGENTS -->
-<div id="agents" class="box hidden">
-<h3>المندوبين</h3>
-<input id="agentName" placeholder="اسم المندوب">
-<button class="primary" onclick="addAgent()">إضافة</button>
-<ul id="agentList"></ul>
-</div>
-
-<!-- STOCK -->
-<div id="stock" class="box hidden">
-<h3>المخزون</h3>
-<ul id="stockList"></ul>
-</div>
-
-<!-- REPORTS -->
+<!-- ================== REPORTS ================== -->
 <div id="reports" class="box hidden">
-<h3>التقارير</h3>
-<p>إجمالي المبيعات: <b id="rSales">0</b></p>
-<p>عدد الفواتير: <b id="rCount">0</b></p>
+  <h3>التقارير</h3>
+  <p>إجمالي المبيعات: <b id="reportSales">0</b></p>
+  <p>عدد الفواتير: <b id="reportCount">0</b></p>
 </div>
 
 <script>
-let invoices=JSON.parse(localStorage.invoices||"[]");
-let customers=JSON.parse(localStorage.customers||'["عميل نقدي"]');
-let agents=JSON.parse(localStorage.agents||'["مندوب عام"]');
-let stock=JSON.parse(localStorage.stock||"{}");
-let cart=[];
-
-function show(id,b){
-document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
-b.classList.add("active");
+// ================== NAV ==================
+function showPage(id,btn){
+  document.querySelectorAll('.box').forEach(b=>b.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
-function load(){
-customer.innerHTML="";customers.forEach(c=>customer.innerHTML+=`<option>${c}</option>`);
-agent.innerHTML="";agents.forEach(a=>agent.innerHTML+=`<option>${a}</option>`);
-custList.innerHTML="";customers.forEach(c=>custList.innerHTML+=`<li>${c}</li>`);
-agentList.innerHTML="";agents.forEach(a=>agentList.innerHTML+=`<li>${a}</li>`);
-renderStock();renderReports();
-}
-load();
+// ================== DATA ==================
+let currentItems = [];
+let invoices = JSON.parse(localStorage.getItem("invoices") || "[]");
 
-function addCustomer(){customers.push(custName.value);custName.value="";localStorage.customers=JSON.stringify(customers);load();}
-function addAgent(){agents.push(agentName.value);agentName.value="";localStorage.agents=JSON.stringify(agents);load();}
-
+// ================== SALES ==================
 function addItem(){
-let t=qty.value*price.value;
-cart.push(t);
-items.innerHTML+=`<tr><td>${item.value}</td><td>${qty.value}</td><td>${t}</td></tr>`;
-total.innerText=cart.reduce((a,b)=>a+b,0);
-stock[item.value]=(stock[item.value]||0)-qty.value;
-localStorage.stock=JSON.stringify(stock);
+  let name = itemName.value.trim();
+  let qty = Number(itemQty.value);
+  let price = Number(itemPrice.value);
+
+  if(!name || qty<=0 || price<=0){
+    alert("أدخل بيانات صحيحة");
+    return;
+  }
+
+  currentItems.push({name,qty,price});
+  renderItems();
+
+  itemName.value="";
+  itemQty.value=1;
+  itemPrice.value="";
+}
+
+function renderItems(){
+  itemsTable.innerHTML="";
+  let total=0;
+
+  currentItems.forEach(i=>{
+    let t = i.qty * i.price;
+    total+=t;
+    itemsTable.innerHTML+=`
+      <tr>
+        <td>${i.name}</td>
+        <td>${i.qty}</td>
+        <td>${i.price}</td>
+        <td>${t}</td>
+      </tr>
+    `;
+  });
+
+  invoiceTotal.innerText=total;
 }
 
 function saveInvoice(){
-invoices.push({
-no:invoices.length+1,
-customer:customer.value,
-agent:agent.value,
-total:+total.innerText,
-date:new Date().toLocaleString()
-});
-localStorage.invoices=JSON.stringify(invoices);
-cart=[];items.innerHTML="";total.innerText=0;
-renderReports();alert("تم حفظ الفاتورة");
+  if(currentItems.length===0){
+    alert("الفاتورة فاضية");
+    return;
+  }
+
+  let invoice = {
+    id: Date.now(),
+    date: new Date().toLocaleString('ar-EG'),
+    items: currentItems,
+    total: Number(invoiceTotal.innerText)
+  };
+
+  invoices.push(invoice);
+  localStorage.setItem("invoices", JSON.stringify(invoices));
+
+  currentItems=[];
+  renderItems();
+  loadInvoices();
+  updateReports();
+
+  alert("تم حفظ الفاتورة ✅");
 }
 
-function renderStock(){
-stockList.innerHTML="";
-for(let i in stock)stockList.innerHTML+=`<li>${i} : ${stock[i]}</li>`;
+// ================== INVOICES ==================
+function loadInvoices(){
+  invoiceList.innerHTML="";
+  invoices.forEach(inv=>{
+    invoiceList.innerHTML+=`
+      <div style="border-bottom:1px solid #ddd;padding:8px">
+        <b>فاتورة #${inv.id}</b><br>
+        ${inv.date}<br>
+        الإجمالي: ${inv.total}
+      </div>
+    `;
+  });
 }
-function renderReports(){
-rSales.innerText=invoices.reduce((a,b)=>a+b.total,0);
-rCount.innerText=invoices.length;
+
+// ================== REPORTS ==================
+function updateReports(){
+  let sum = invoices.reduce((a,b)=>a+b.total,0);
+  reportSales.innerText=sum;
+  reportCount.innerText=invoices.length;
 }
+
+// ================== INIT ==================
+loadInvoices();
+updateReports();
 </script>
 
 </body>
