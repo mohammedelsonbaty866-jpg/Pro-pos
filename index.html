@@ -2,176 +2,222 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>PosPro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pos Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0d6efd" />
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
 
+  <!-- Style -->
   <style>
     body {
-      font-family: Tahoma, Arial;
       margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial;
       background: #f4f6f8;
     }
-
     header {
-      background: #0d6efd;
+      background: #1f2937;
       color: #fff;
       padding: 15px;
       text-align: center;
-      font-size: 18px;
+      font-size: 20px;
+    }
+    .container {
+      padding: 15px;
+    }
+    .hidden { display: none; }
+
+    input, button, select {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 15px;
+    }
+    button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button.secondary {
+      background: #6b7280;
     }
 
     nav {
       display: flex;
       flex-wrap: wrap;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
+      background: #111827;
     }
-
     nav button {
       flex: 1;
-      padding: 10px;
+      border-radius: 0;
+      background: #111827;
       border: none;
-      background: none;
-      font-size: 14px;
-    }
-
-    nav button.active {
-      background: #0d6efd;
       color: #fff;
+      padding: 12px;
+    }
+    nav button.active {
+      background: #2563eb;
     }
 
-    .container {
-      padding: 15px;
-    }
-
-    .box {
+    .card {
       background: #fff;
       padding: 15px;
+      border-radius: 6px;
       margin-bottom: 10px;
-      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,.05);
     }
 
-    input, select, button {
+    table {
       width: 100%;
-      padding: 10px;
-      margin-top: 8px;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
       font-size: 14px;
     }
-
-    button.primary {
-      background: #0d6efd;
-      color: #fff;
-      border: none;
-    }
-
-    .center {
-      text-align: center;
-      margin-top: 100px;
+    table th {
+      background: #f1f5f9;
     }
   </style>
 </head>
 
 <body>
 
-<!-- صفحة تسجيل الدخول -->
-<div id="loginPage" class="center">
-  <h2>تسجيل الدخول</h2>
-  <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
-  <input type="password" id="loginPassword" placeholder="كلمة المرور" />
-  <button onclick="loginUser()">دخول</button>
+<header>Pos Pro</header>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginPage" class="container">
+  <div class="card">
+    <h3>تسجيل الدخول</h3>
+    <input id="loginEmail" type="email" placeholder="البريد الإلكتروني">
+    <input id="loginPassword" type="password" placeholder="كلمة المرور">
+    <button id="loginBtn">دخول</button>
+    <hr>
+    <button class="secondary" id="goRegisterBtn">إنشاء حساب جديد</button>
+  </div>
 </div>
 
-<!-- التطبيق -->
-<div id="app" style="display:none">
+<!-- ================= REGISTER ================= -->
+<div id="registerPage" class="container hidden">
+  <div class="card">
+    <h3>إنشاء حساب شركة</h3>
+    <input id="regCompany" placeholder="اسم الشركة">
+    <input id="regName" placeholder="اسم المالك">
+    <input id="regEmail" type="email" placeholder="البريد الإلكتروني">
+    <input id="regPassword" type="password" placeholder="كلمة المرور">
+    <button id="registerBtn">تسجيل</button>
+    <button class="secondary" id="backLoginBtn">رجوع</button>
+  </div>
+</div>
 
-  <header>PosPro</header>
+<!-- ================= APP ================= -->
+<div id="appPage" class="hidden">
 
+  <!-- NAV -->
   <nav>
-    <button class="active" onclick="showSection('dashboard',this)">الرئيسية</button>
-    <button onclick="showSection('sales',this)">المبيعات</button>
-    <button onclick="showSection('purchases',this)">المشتريات</button>
-    <button onclick="showSection('expenses',this)">المصروفات</button>
-    <button onclick="showSection('reports',this)">التقارير</button>
-    <button onclick="showSection('settings',this)">الإعدادات</button>
-    <button onclick="logout()">خروج</button>
+    <button data-tab="salesTab" class="active">المبيعات</button>
+    <button data-tab="purchasesTab">المشتريات</button>
+    <button data-tab="suppliersTab">الموردين</button>
+    <button data-tab="repsTab">المندوبين</button>
+    <button data-tab="expensesTab">المصروفات</button>
+    <button data-tab="reportsTab">التقارير</button>
+    <button data-tab="settingsTab">الإعدادات</button>
   </nav>
 
   <div class="container">
 
-    <!-- الرئيسية -->
-    <div id="dashboard" class="box">
-      <h3>👋 مرحبًا بك</h3>
-      <p>نظام PosPro لإدارة المبيعات والمحاسبة</p>
+    <!-- SALES -->
+    <div id="salesTab" class="tab">
+      <div class="card">
+        <h3>إضافة فاتورة بيع</h3>
+        <input id="saleCustomer" placeholder="اسم العميل">
+        <input id="saleAmount" type="number" placeholder="الإجمالي">
+        <button id="addSaleBtn">حفظ</button>
+      </div>
+      <div class="card">
+        <h3>المبيعات</h3>
+        <table>
+          <thead>
+            <tr><th>العميل</th><th>الإجمالي</th><th>التاريخ</th></tr>
+          </thead>
+          <tbody id="salesList"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- المبيعات -->
-    <div id="sales" class="box" style="display:none">
-      <h3>🧾 المبيعات</h3>
-      <input placeholder="اسم الصنف">
-      <input type="number" placeholder="الكمية">
-      <input type="number" placeholder="السعر">
-      <button class="primary">حفظ فاتورة</button>
-      <div id="salesList"></div>
+    <!-- PURCHASES -->
+    <div id="purchasesTab" class="tab hidden">
+      <div class="card">
+        <h3>إضافة مشتريات</h3>
+        <input id="purchaseSupplier" placeholder="المورد">
+        <input id="purchaseAmount" type="number" placeholder="القيمة">
+        <button id="addPurchaseBtn">حفظ</button>
+      </div>
+      <table>
+        <tbody id="purchasesList"></tbody>
+      </table>
     </div>
 
-    <!-- المشتريات -->
-    <div id="purchases" class="box" style="display:none">
-      <h3>📦 المشتريات</h3>
-      <input placeholder="اسم المورد / الصنف">
-      <input type="number" placeholder="الكمية">
-      <input type="number" placeholder="سعر الشراء">
-      <button class="primary">حفظ شراء</button>
-      <div id="purchasesList"></div>
+    <!-- SUPPLIERS -->
+    <div id="suppliersTab" class="tab hidden">
+      <div class="card">
+        <h3>إضافة مورد</h3>
+        <input id="supplierName" placeholder="اسم المورد">
+        <button id="addSupplierBtn">حفظ</button>
+      </div>
+      <ul id="suppliersList"></ul>
     </div>
 
-    <!-- المصروفات -->
-    <div id="expenses" class="box" style="display:none">
-      <h3>💸 المصروفات</h3>
-      <select>
-        <option>إيجار</option>
-        <option>كهرباء</option>
-        <option>رواتب</option>
-        <option>أخرى</option>
-      </select>
-      <input type="number" placeholder="المبلغ">
-      <button class="primary">إضافة مصروف</button>
-      <div id="expensesList"></div>
+    <!-- REPS -->
+    <div id="repsTab" class="tab hidden">
+      <div class="card">
+        <h3>إضافة مندوب</h3>
+        <input id="repName" placeholder="اسم المندوب">
+        <button id="addRepBtn">حفظ</button>
+      </div>
+      <ul id="repsList"></ul>
     </div>
 
-    <!-- التقارير -->
-    <div id="reports" class="box" style="display:none">
-      <h3>📊 التقارير</h3>
-      <input type="date">
-      <input type="date">
-      <button>تقرير المبيعات</button>
-      <button>صافي الربح</button>
-      <div id="reportsResult"></div>
+    <!-- EXPENSES -->
+    <div id="expensesTab" class="tab hidden">
+      <div class="card">
+        <h3>إضافة مصروف</h3>
+        <input id="expenseNote" placeholder="البيان">
+        <input id="expenseAmount" type="number" placeholder="القيمة">
+        <button id="addExpenseBtn">حفظ</button>
+      </div>
+      <ul id="expensesList"></ul>
     </div>
 
-    <!-- الإعدادات -->
-    <div id="settings" class="box" style="display:none">
-      <h3>⚙️ الإعدادات</h3>
-      <input placeholder="اسم النشاط">
-      <input placeholder="اسم المستخدم">
-      <select>
-        <option>بدون ضريبة</option>
-        <option>تفعيل الضريبة</option>
-      </select>
-      <button class="primary">حفظ الإعدادات</button>
+    <!-- REPORTS -->
+    <div id="reportsTab" class="tab hidden">
+      <div class="card">
+        <h3>التقارير</h3>
+        <p>إجمالي المبيعات: <span id="totalSales">0</span></p>
+        <p>إجمالي المصروفات: <span id="totalExpenses">0</span></p>
+        <p><strong>صافي الربح: <span id="netProfit">0</span></strong></p>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settingsTab" class="tab hidden">
+      <div class="card">
+        <h3>الإعدادات</h3>
+        <p id="userInfo"></p>
+        <button id="logoutBtn">تسجيل خروج</button>
+      </div>
     </div>
 
   </div>
 </div>
 
-<!-- Firebase Modules -->
-<script type="module">
-  import "./js/firebase.js";
-  import "./js/auth.js";
-  import "./js/app.js";
-</script>
+<!-- JS -->
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
