@@ -1,121 +1,120 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Pos Pro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>POS Pro - فواتير</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/app.css">
+<style>
+body{font-family:tahoma;background:#f4f6f8;margin:0}
+header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
+.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
+input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
+button.primary{background:#0d6efd;color:#fff;border:none}
+table{width:100%;margin-top:10px;border-collapse:collapse}
+th,td{border:1px solid #ddd;padding:8px;text-align:center}
+th{background:#eee}
+.total{font-size:18px;font-weight:bold;margin-top:10px}
+</style>
 </head>
 
 <body>
 
-<header class="header">
-  <h1>🧾 Pos Pro</h1>
-  <span>سوبر ماركت</span>
-</header>
+<header>🧾 POS Pro - فواتير بيع</header>
 
-<nav class="nav">
-  <button onclick="showSection('sales')" class="active">المبيعات</button>
-  <button onclick="showSection('purchases')">المشتريات</button>
-  <button onclick="showSection('inventory')">المخزون</button>
-  <button onclick="showSection('agents')">المناديب</button>
-  <button onclick="showSection('expenses')">المصروفات</button>
-  <button onclick="showSection('reports')">التقارير</button>
-</nav>
+<div class="box">
+  <h3>إضافة صنف</h3>
+  <input id="itemName" placeholder="اسم الصنف">
+  <input id="itemQty" type="number" placeholder="الكمية" value="1">
+  <input id="itemPrice" type="number" placeholder="السعر">
+  <button class="primary" onclick="addItem()">➕ إضافة</button>
+</div>
 
-<main class="container">
+<div class="box">
+  <h3>الفاتورة</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>الصنف</th>
+        <th>الكمية</th>
+        <th>السعر</th>
+        <th>الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody id="invoiceItems"></tbody>
+  </table>
 
-  <!-- المبيعات -->
-  <section id="sales" class="box">
-    <h2>🧾 فاتورة بيع</h2>
+  <div class="total">الإجمالي: <span id="invoiceTotal">0</span></div>
 
-    <input id="saleItem" placeholder="اسم الصنف">
-    <input id="saleQty" type="number" placeholder="الكمية" value="1">
-    <input id="salePrice" type="number" placeholder="السعر">
+  <button class="primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
+  <button onclick="printInvoice()">🖨️ طباعة</button>
+</div>
 
-    <button class="primary" onclick="addSale()">➕ إضافة</button>
+<div class="box">
+  <h3>الفواتير المحفوظة</h3>
+  <div id="savedInvoices"></div>
+</div>
 
-    <div id="salesList"></div>
-
-    <div class="total">
-      الإجمالي: <span id="salesTotal">0</span>
-    </div>
-
-    <button onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
-  </section>
-
-  <!-- المشتريات -->
-  <section id="purchases" class="box hidden">
-    <h2>📦 مشتريات</h2>
-
-    <input id="buyItem" placeholder="اسم الصنف">
-    <input id="buyQty" type="number" value="1">
-    <input id="buyPrice" type="number" placeholder="سعر الشراء">
-
-    <button class="primary" onclick="addPurchase()">➕ إضافة</button>
-
-    <div id="purchaseList"></div>
-  </section>
-
-  <!-- المخزون -->
-  <section id="inventory" class="box hidden">
-    <h2>📊 المخزون</h2>
-    <div id="inventoryList"></div>
-  </section>
-
-  <!-- المناديب -->
-  <section id="agents" class="box hidden">
-    <h2>👤 المناديب</h2>
-
-    <input id="agentName" placeholder="اسم المندوب">
-    <button class="primary" onclick="addAgent()">➕ إضافة مندوب</button>
-
-    <div id="agentsList"></div>
-  </section>
-
-  <!-- المصروفات -->
-  <section id="expenses" class="box hidden">
-    <h2>💸 المصروفات</h2>
-
-    <input id="expenseDesc" placeholder="الوصف">
-    <input id="expenseAmount" type="number" placeholder="المبلغ">
-
-    <button class="primary" onclick="addExpense()">➕ إضافة</button>
-
-    <div id="expensesList"></div>
-  </section>
-
-  <!-- التقارير -->
-  <section id="reports" class="box hidden">
-    <h2>📈 التقارير</h2>
-
-    <p>إجمالي المبيعات: <b id="reportSales">0</b></p>
-    <p>إجمالي المشتريات: <b id="reportPurchases">0</b></p>
-    <p>إجمالي المصروفات: <b id="reportExpenses">0</b></p>
-    <p>صافي الربح: <b id="reportNet">0</b></p>
-  </section>
-
-</main>
-
-<!-- JS -->
-<script src="js/data.js"></script>
-<script src="js/sales.js"></script>
-<script src="js/purchases.js"></script>
-<script src="js/inventory.js"></script>
-<script src="js/agents.js"></script>
-<script src="js/expenses.js"></script>
-<script src="js/reports.js"></script>
-<script src="js/app.js"></script>
-
-<!-- Service Worker -->
 <script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
+let invoice = [];
+let invoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+
+function addItem(){
+  const name = itemName.value;
+  const qty = +itemQty.value;
+  const price = +itemPrice.value;
+  if(!name || qty<=0 || price<=0) return alert("بيانات غير صحيحة");
+
+  invoice.push({name,qty,price});
+  renderInvoice();
+  itemName.value="";
+  itemQty.value=1;
+  itemPrice.value="";
+}
+
+function renderInvoice(){
+  let html="", total=0;
+  invoice.forEach(i=>{
+    const t=i.qty*i.price;
+    total+=t;
+    html+=`<tr>
+      <td>${i.name}</td>
+      <td>${i.qty}</td>
+      <td>${i.price}</td>
+      <td>${t}</td>
+    </tr>`;
+  });
+  invoiceItems.innerHTML=html;
+  invoiceTotal.innerText=total;
+}
+
+function saveInvoice(){
+  if(invoice.length===0) return alert("الفاتورة فاضية");
+  invoices.push({
+    date:new Date().toLocaleString("ar-EG"),
+    items:invoice,
+    total:invoiceTotal.innerText
+  });
+  localStorage.setItem("invoices",JSON.stringify(invoices));
+  invoice=[];
+  renderInvoice();
+  loadInvoices();
+  alert("تم حفظ الفاتورة");
+}
+
+function loadInvoices(){
+  savedInvoices.innerHTML="";
+  invoices.forEach((inv,i)=>{
+    savedInvoices.innerHTML+=`
+      <div style="border-bottom:1px solid #ddd;padding:5px">
+        🧾 فاتورة #${i+1} - ${inv.date} - الإجمالي: ${inv.total}
+      </div>`;
+  });
+}
+loadInvoices();
+
+function printInvoice(){
+  window.print();
 }
 </script>
 
