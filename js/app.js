@@ -153,3 +153,43 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSales();
 });
 </script>
+let sales = load("sales");
+let buys = load("buys");
+let agents = load("agents");
+
+function showPage(id,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function addSale(){
+  let total = saleQty.value * salePrice.value;
+  sales.push(total);
+  save("sales",sales);
+  salesList.innerHTML += `<div>${saleName.value} = ${total}</div>`;
+  updateReports();
+}
+
+function addPurchase(){
+  let total = buyQty.value * buyPrice.value;
+  buys.push(total);
+  save("buys",buys);
+  buyList.innerHTML += `<div>${buyName.value} = ${total}</div>`;
+  updateReports();
+}
+
+function addAgent(){
+  agents.push(agentName.value);
+  save("agents",agents);
+  agentsList.innerHTML += `<div>${agentName.value}</div>`;
+}
+
+function updateReports(){
+  let s = sales.reduce((a,b)=>a+b,0);
+  let b = buys.reduce((a,b)=>a+b,0);
+  rSales.innerText = s;
+  rBuys.innerText = b;
+  rNet.innerText = s - b;
+}
