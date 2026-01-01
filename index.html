@@ -16,23 +16,23 @@ body{font-family:tahoma;background:var(--bg);margin:0}
 header{
 background:var(--main);
 color:#fff;
-padding:18px;
+padding:16px;
 text-align:center;
-font-size:22px;
+font-size:20px;
 font-weight:bold
 }
 .box{
 background:var(--card);
-margin:15px;
+margin:12px;
 padding:15px;
 border-radius:8px;
 box-shadow:0 2px 6px rgba(0,0,0,.08)
 }
 input,select,button{
 width:100%;
-padding:12px;
+padding:10px;
 margin-top:8px;
-font-size:15px;
+font-size:14px;
 border-radius:6px;
 border:1px solid #ccc
 }
@@ -50,10 +50,11 @@ border-bottom:1px solid #ddd
 }
 nav button{
 flex:1;
-padding:12px;
+padding:10px;
 border:none;
 background:none;
-font-weight:bold
+font-weight:bold;
+font-size:14px
 }
 nav button.active{
 background:var(--main);
@@ -63,7 +64,7 @@ color:#fff
 .stat{
 display:flex;
 justify-content:space-between;
-padding:8px 0;
+padding:6px 0;
 border-bottom:1px dashed #ddd
 }
 .stat b{color:var(--main)}
@@ -89,10 +90,10 @@ nav,button{display:none}
 <div id="app" class="hidden">
 
 <nav>
-<button class="active" onclick="show('sales',this)">مبيعات</button>
-<button onclick="show('purchases',this)">مشتريات</button>
-<button onclick="show('stock',this)">المخزون</button>
-<button onclick="show('reports',this)">التقارير</button>
+<button class="active" onclick="showPage('sales',this)">المبيعات</button>
+<button onclick="showPage('purchases',this)">المشتريات</button>
+<button onclick="showPage('stock',this)">المخزون</button>
+<button onclick="showPage('reports',this)">التقارير</button>
 <button onclick="logout()">خروج</button>
 </nav>
 
@@ -100,7 +101,7 @@ nav,button{display:none}
 <div id="sales" class="box">
 <h3>فاتورة بيع</h3>
 <select id="saleItem"></select>
-<input id="saleQty" type="number" value="1">
+<input id="saleQty" type="number" min="1" value="1">
 <button class="primary" onclick="addSale()">إضافة بيع</button>
 </div>
 
@@ -108,9 +109,9 @@ nav,button{display:none}
 <div id="purchases" class="box hidden">
 <h3>إضافة مشتريات</h3>
 <select id="buyItem"></select>
-<input id="buyQty" type="number" placeholder="الكمية">
-<input id="buyPrice" type="number" placeholder="سعر الشراء">
-<button class="primary" onclick="addPurchase()">حفظ</button>
+<input id="buyQty" type="number" min="1" placeholder="الكمية">
+<input id="buyPrice" type="number" min="0" placeholder="سعر الشراء">
+<button class="primary" onclick="addPurchase()">حفظ المشتريات</button>
 </div>
 
 <!-- STOCK -->
@@ -121,7 +122,7 @@ nav,button{display:none}
 
 <!-- REPORTS -->
 <div id="reports" class="box hidden">
-<h3>التقارير المالية</h3>
+<h3>التقارير</h3>
 <div class="stat">إجمالي المبيعات <b id="rSales">0</b></div>
 <div class="stat">إجمالي المشتريات <b id="rBuys">0</b></div>
 <div class="stat">صافي الربح <b id="rNet">0</b></div>
@@ -131,82 +132,101 @@ nav,button{display:none}
 </div>
 
 <script>
-// LOGIN
+// ================= AUTH =================
 const USER={email:"admin@pos.com",pass:"1234"};
+
 function login(){
 if(loginEmail.value===USER.email && loginPass.value===USER.pass){
-localStorage.logged=1;start();
-}else alert("بيانات غير صحيحة");
+localStorage.setItem("logged","1");
+startApp();
+}else{
+alert("بيانات الدخول غير صحيحة");
 }
-function logout(){localStorage.clear();location.reload();}
-function start(){
+}
+
+function logout(){
+localStorage.clear();
+location.reload();
+}
+
+function startApp(){
 loginBox.classList.add("hidden");
 app.classList.remove("hidden");
-render();
+renderAll();
 }
-if(localStorage.logged) start();
 
-// DATA
-let stock=JSON.parse(localStorage.stock||`[
-{"name":"منتج 1","qty":50,"sell":10,"buy":7},
-{"name":"منتج 2","qty":30,"sell":15,"buy":10}
-]`);
-let sales=JSON.parse(localStorage.sales||"[]");
-let buys=JSON.parse(localStorage.buys||"[]");
+if(localStorage.getItem("logged")==="1") startApp();
 
-// NAV
-function show(id,b){
-document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
+// ================= DATA =================
+let stock = JSON.parse(localStorage.getItem("stock")) || [
+{name:"منتج 1",qty:50,sell:10,buy:7},
+{name:"منتج 2",qty:30,sell:15,buy:10}
+];
+
+let sales = JSON.parse(localStorage.getItem("sales")) || [];
+let buys  = JSON.parse(localStorage.getItem("buys"))  || [];
+
+// ================= NAV =================
+function showPage(id,btn){
+document.querySelectorAll('#app .box').forEach(b=>b.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
-document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
-b.classList.add("active");
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");
 }
 
-// SALES
+// ================= SALES =================
 function addSale(){
-let i=saleItem.value;
-let q=+saleQty.value;
-if(stock[i].qty<q) return alert("مخزون غير كافي");
-let total=q*stock[i].sell;
-stock[i].qty-=q;
+let i = saleItem.value;
+let q = Number(saleQty.value);
+if(q<=0) return;
+if(stock[i].qty < q) return alert("الكمية غير متوفرة في المخزون");
+let total = q * stock[i].sell;
+stock[i].qty -= q;
 sales.push(total);
-save();render();
+saveAll();
+renderAll();
 }
 
-// PURCHASE
+// ================= PURCHASE =================
 function addPurchase(){
-let i=buyItem.value;
-let q=+buyQty.value;
-let p=+buyPrice.value;
-stock[i].qty+=q;
-stock[i].buy=p;
+let i = buyItem.value;
+let q = Number(buyQty.value);
+let p = Number(buyPrice.value);
+if(q<=0 || p<=0) return;
+stock[i].qty += q;
+stock[i].buy = p;
 buys.push(q*p);
-save();render();
+saveAll();
+renderAll();
 }
 
-// RENDER
-function render(){
-saleItem.innerHTML=buyItem.innerHTML="";
+// ================= RENDER =================
+function renderAll(){
+saleItem.innerHTML = "";
+buyItem.innerHTML  = "";
 stock.forEach((s,i)=>{
-saleItem.innerHTML+=`<option value="${i}">${s.name}</option>`;
-buyItem.innerHTML+=`<option value="${i}">${s.name}</option>`;
+saleItem.innerHTML += `<option value="${i}">${s.name}</option>`;
+buyItem.innerHTML  += `<option value="${i}">${s.name}</option>`;
 });
+
 stockList.innerHTML="";
 stock.forEach(s=>{
-stockList.innerHTML+=`<div class="stat">${s.name}<b>${s.qty}</b></div>`;
+stockList.innerHTML += `<div class="stat">${s.name}<b>${s.qty}</b></div>`;
 });
-let ts=sales.reduce((a,b)=>a+b,0);
-let tb=buys.reduce((a,b)=>a+b,0);
-rSales.innerText=ts;
-rBuys.innerText=tb;
-rNet.innerText=ts-tb;
+
+let totalSales = sales.reduce((a,b)=>a+b,0);
+let totalBuys  = buys.reduce((a,b)=>a+b,0);
+
+rSales.innerText = totalSales;
+rBuys.innerText  = totalBuys;
+rNet.innerText   = totalSales - totalBuys;
 }
 
-// SAVE
-function save(){
-localStorage.stock=JSON.stringify(stock);
-localStorage.sales=JSON.stringify(sales);
-localStorage.buys=JSON.stringify(buys);
+// ================= SAVE =================
+function saveAll(){
+localStorage.setItem("stock",JSON.stringify(stock));
+localStorage.setItem("sales",JSON.stringify(sales));
+localStorage.setItem("buys",JSON.stringify(buys));
 }
 </script>
 
