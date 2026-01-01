@@ -2,112 +2,133 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>POS Pro</title>
+<title>POS Pro | سوبر ماركت</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-body{font-family:tahoma;background:#f4f6f8;margin:0}
-header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
-nav{display:flex;background:#fff}
-nav button{flex:1;padding:10px;border:none;background:none}
-nav button.active{background:#0d6efd;color:#fff}
-.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
-input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
-button.primary{background:#0d6efd;color:#fff;border:none}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ddd;padding:6px;text-align:center}
-.hidden{display:none}
-</style>
-</head>
+<!-- CSS -->
+<link rel="stylesheet" href="css/style.css">
 
+</head>
 <body>
 
-<header>📊 POS Pro</header>
+<header class="header">
+  <h1>POS Pro</h1>
+  <span class="shop-name">سوبر ماركت</span>
+</header>
 
-<nav>
-<button class="active" onclick="show('sales',this)">المبيعات</button>
-<button onclick="show('purchases',this)">المشتريات</button>
-<button onclick="show('stock',this)">المخزون</button>
+<nav class="nav">
+  <button onclick="App.show('sales')" class="active">المبيعات</button>
+  <button onclick="App.show('purchases')">المشتريات</button>
+  <button onclick="App.show('stock')">المخزون</button>
+  <button onclick="App.show('agents')">المناديب</button>
+  <button onclick="App.show('reports')">التقارير</button>
 </nav>
 
-<!-- SALES -->
-<div id="sales" class="box">
-<h3>فاتورة بيع</h3>
-<input id="sName" placeholder="اسم الصنف">
-<input id="sQty" type="number" placeholder="الكمية">
-<input id="sPrice" type="number" placeholder="السعر">
-<button class="primary" onclick="addSale()">➕ إضافة بيع</button>
-<table>
-<tr><th>الصنف</th><th>ك</th><th>س</th><th>إ</th></tr>
-<tbody id="salesList"></tbody>
-</table>
-<b>الإجمالي: <span id="salesTotal">0</span></b>
-</div>
+<main>
 
-<!-- PURCHASES -->
-<div id="purchases" class="box hidden">
-<h3>إضافة مشتريات</h3>
-<input id="pName" placeholder="اسم الصنف">
-<input id="pQty" type="number" placeholder="الكمية">
-<input id="pPrice" type="number" placeholder="سعر الشراء">
-<button class="primary" onclick="addPurchase()">➕ إضافة شراء</button>
-</div>
+  <!-- SALES -->
+  <section id="sales" class="screen">
+    <h2>فاتورة بيع</h2>
 
-<!-- STOCK -->
-<div id="stock" class="box hidden">
-<h3>المخزون</h3>
-<table>
-<tr><th>الصنف</th><th>الكمية</th></tr>
-<tbody id="stockList"></tbody>
-</table>
-</div>
+    <select id="saleAgent"></select>
+    <input id="saleName" placeholder="اسم الصنف">
+    <input id="saleQty" type="number" placeholder="الكمية">
+    <input id="salePrice" type="number" placeholder="سعر البيع">
 
-<script>
-let stock = JSON.parse(localStorage.getItem("stock")||"{}");
-let sales=[];
+    <button class="primary" onclick="Sales.add()">إضافة بيع</button>
 
-function saveStock(){
-  localStorage.setItem("stock",JSON.stringify(stock));
-  renderStock();
-}
+    <table>
+      <thead>
+        <tr>
+          <th>المندوب</th>
+          <th>الصنف</th>
+          <th>الكمية</th>
+          <th>الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody id="salesTable"></tbody>
+    </table>
 
-function renderStock(){
-  stockList.innerHTML="";
-  for(let k in stock){
-    stockList.innerHTML+=`<tr><td>${k}</td><td>${stock[k]}</td></tr>`;
-  }
-}
-renderStock();
+    <div class="total">
+      إجمالي المبيعات: <span id="salesTotal">0</span>
+    </div>
+  </section>
 
-function addPurchase(){
-  let n=pName.value,q=+pQty.value;
-  if(!n||q<=0) return alert("بيانات خطأ");
-  stock[n]=(stock[n]||0)+q;
-  saveStock();
-  pName.value=pQty.value=pPrice.value="";
-  alert("تم إضافة للمخزون");
-}
+  <!-- PURCHASES -->
+  <section id="purchases" class="screen hidden">
+    <h2>المشتريات</h2>
 
-function addSale(){
-  let n=sName.value,q=+sQty.value,pr=+sPrice.value;
-  if(!n||q<=0||pr<=0) return alert("بيانات خطأ");
-  if((stock[n]||0)<q) return alert("المخزون غير كافي");
+    <input id="buyName" placeholder="اسم الصنف">
+    <input id="buyQty" type="number" placeholder="الكمية">
+    <input id="buyCost" type="number" placeholder="سعر الشراء">
 
-  stock[n]-=q;
-  sales.push(q*pr);
-  salesList.innerHTML+=`<tr><td>${n}</td><td>${q}</td><td>${pr}</td><td>${q*pr}</td></tr>`;
-  salesTotal.innerText=sales.reduce((a,b)=>a+b,0);
-  saveStock();
-  sName.value=sQty.value=sPrice.value="";
-}
+    <button class="primary" onclick="Purchases.add()">إضافة شراء</button>
+  </section>
 
-function show(id,b){
-  document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-  document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-}
-</script>
+  <!-- STOCK -->
+  <section id="stock" class="screen hidden">
+    <h2>المخزون</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>الصنف</th>
+          <th>الكمية</th>
+          <th>تكلفة الشراء</th>
+        </tr>
+      </thead>
+      <tbody id="stockTable"></tbody>
+    </table>
+  </section>
+
+  <!-- AGENTS -->
+  <section id="agents" class="screen hidden">
+    <h2>المناديب</h2>
+
+    <input id="agentName" placeholder="اسم المندوب">
+    <button class="primary" onclick="Agents.add()">إضافة مندوب</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>المندوب</th>
+          <th>إجمالي المبيعات</th>
+        </tr>
+      </thead>
+      <tbody id="agentsTable"></tbody>
+    </table>
+  </section>
+
+  <!-- REPORTS -->
+  <section id="reports" class="screen hidden">
+    <h2>التقارير</h2>
+
+    <p>إجمالي المبيعات: <b id="reportSales">0</b></p>
+    <p>إجمالي التكلفة: <b id="reportCost">0</b></p>
+    <p>صافي الربح: <b id="reportNet">0</b></p>
+
+    <h3>مبيعات حسب المندوب</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>المندوب</th>
+          <th>الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody id="reportAgents"></tbody>
+    </table>
+  </section>
+
+</main>
+
+<!-- JS -->
+<script src="js/data.js"></script>
+<script src="js/stock.js"></script>
+<script src="js/purchases.js"></script>
+<script src="js/sales.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
