@@ -2,119 +2,110 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>POS Pro - فواتير</title>
+<title>POS Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{font-family:tahoma;background:#f4f6f8;margin:0}
 header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
+nav{display:flex;background:#fff}
+nav button{flex:1;padding:10px;border:none;background:none}
+nav button.active{background:#0d6efd;color:#fff}
 .box{background:#fff;margin:15px;padding:15px;border-radius:6px}
 input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
 button.primary{background:#0d6efd;color:#fff;border:none}
-table{width:100%;margin-top:10px;border-collapse:collapse}
-th,td{border:1px solid #ddd;padding:8px;text-align:center}
-th{background:#eee}
-.total{font-size:18px;font-weight:bold;margin-top:10px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ddd;padding:6px;text-align:center}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<header>🧾 POS Pro - فواتير بيع</header>
+<header>📊 POS Pro</header>
 
-<div class="box">
-  <h3>إضافة صنف</h3>
-  <input id="itemName" placeholder="اسم الصنف">
-  <input id="itemQty" type="number" placeholder="الكمية" value="1">
-  <input id="itemPrice" type="number" placeholder="السعر">
-  <button class="primary" onclick="addItem()">➕ إضافة</button>
+<nav>
+<button class="active" onclick="show('sales',this)">المبيعات</button>
+<button onclick="show('purchases',this)">المشتريات</button>
+<button onclick="show('stock',this)">المخزون</button>
+</nav>
+
+<!-- SALES -->
+<div id="sales" class="box">
+<h3>فاتورة بيع</h3>
+<input id="sName" placeholder="اسم الصنف">
+<input id="sQty" type="number" placeholder="الكمية">
+<input id="sPrice" type="number" placeholder="السعر">
+<button class="primary" onclick="addSale()">➕ إضافة بيع</button>
+<table>
+<tr><th>الصنف</th><th>ك</th><th>س</th><th>إ</th></tr>
+<tbody id="salesList"></tbody>
+</table>
+<b>الإجمالي: <span id="salesTotal">0</span></b>
 </div>
 
-<div class="box">
-  <h3>الفاتورة</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>الصنف</th>
-        <th>الكمية</th>
-        <th>السعر</th>
-        <th>الإجمالي</th>
-      </tr>
-    </thead>
-    <tbody id="invoiceItems"></tbody>
-  </table>
-
-  <div class="total">الإجمالي: <span id="invoiceTotal">0</span></div>
-
-  <button class="primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
-  <button onclick="printInvoice()">🖨️ طباعة</button>
+<!-- PURCHASES -->
+<div id="purchases" class="box hidden">
+<h3>إضافة مشتريات</h3>
+<input id="pName" placeholder="اسم الصنف">
+<input id="pQty" type="number" placeholder="الكمية">
+<input id="pPrice" type="number" placeholder="سعر الشراء">
+<button class="primary" onclick="addPurchase()">➕ إضافة شراء</button>
 </div>
 
-<div class="box">
-  <h3>الفواتير المحفوظة</h3>
-  <div id="savedInvoices"></div>
+<!-- STOCK -->
+<div id="stock" class="box hidden">
+<h3>المخزون</h3>
+<table>
+<tr><th>الصنف</th><th>الكمية</th></tr>
+<tbody id="stockList"></tbody>
+</table>
 </div>
 
 <script>
-let invoice = [];
-let invoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+let stock = JSON.parse(localStorage.getItem("stock")||"{}");
+let sales=[];
 
-function addItem(){
-  const name = itemName.value;
-  const qty = +itemQty.value;
-  const price = +itemPrice.value;
-  if(!name || qty<=0 || price<=0) return alert("بيانات غير صحيحة");
-
-  invoice.push({name,qty,price});
-  renderInvoice();
-  itemName.value="";
-  itemQty.value=1;
-  itemPrice.value="";
+function saveStock(){
+  localStorage.setItem("stock",JSON.stringify(stock));
+  renderStock();
 }
 
-function renderInvoice(){
-  let html="", total=0;
-  invoice.forEach(i=>{
-    const t=i.qty*i.price;
-    total+=t;
-    html+=`<tr>
-      <td>${i.name}</td>
-      <td>${i.qty}</td>
-      <td>${i.price}</td>
-      <td>${t}</td>
-    </tr>`;
-  });
-  invoiceItems.innerHTML=html;
-  invoiceTotal.innerText=total;
+function renderStock(){
+  stockList.innerHTML="";
+  for(let k in stock){
+    stockList.innerHTML+=`<tr><td>${k}</td><td>${stock[k]}</td></tr>`;
+  }
+}
+renderStock();
+
+function addPurchase(){
+  let n=pName.value,q=+pQty.value;
+  if(!n||q<=0) return alert("بيانات خطأ");
+  stock[n]=(stock[n]||0)+q;
+  saveStock();
+  pName.value=pQty.value=pPrice.value="";
+  alert("تم إضافة للمخزون");
 }
 
-function saveInvoice(){
-  if(invoice.length===0) return alert("الفاتورة فاضية");
-  invoices.push({
-    date:new Date().toLocaleString("ar-EG"),
-    items:invoice,
-    total:invoiceTotal.innerText
-  });
-  localStorage.setItem("invoices",JSON.stringify(invoices));
-  invoice=[];
-  renderInvoice();
-  loadInvoices();
-  alert("تم حفظ الفاتورة");
+function addSale(){
+  let n=sName.value,q=+sQty.value,pr=+sPrice.value;
+  if(!n||q<=0||pr<=0) return alert("بيانات خطأ");
+  if((stock[n]||0)<q) return alert("المخزون غير كافي");
+
+  stock[n]-=q;
+  sales.push(q*pr);
+  salesList.innerHTML+=`<tr><td>${n}</td><td>${q}</td><td>${pr}</td><td>${q*pr}</td></tr>`;
+  salesTotal.innerText=sales.reduce((a,b)=>a+b,0);
+  saveStock();
+  sName.value=sQty.value=sPrice.value="";
 }
 
-function loadInvoices(){
-  savedInvoices.innerHTML="";
-  invoices.forEach((inv,i)=>{
-    savedInvoices.innerHTML+=`
-      <div style="border-bottom:1px solid #ddd;padding:5px">
-        🧾 فاتورة #${i+1} - ${inv.date} - الإجمالي: ${inv.total}
-      </div>`;
-  });
-}
-loadInvoices();
-
-function printInvoice(){
-  window.print();
+function show(id,b){
+  document.querySelectorAll('.box').forEach(x=>x.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
 }
 </script>
 
