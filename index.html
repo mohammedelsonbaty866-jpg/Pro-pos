@@ -19,7 +19,7 @@ nav button.active{background:var(--main);color:#fff}
 .container{padding:15px}
 .card{background:var(--card);padding:15px;border-radius:6px;margin-bottom:15px}
 .hidden{display:none}
-input,button{width:100%;padding:10px;margin-top:8px}
+input,select,button{width:100%;padding:10px;margin-top:8px}
 button.primary{background:var(--main);color:#fff;border:none}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ddd;padding:6px;text-align:center}
@@ -29,7 +29,7 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 
 <body>
 
-<header>🧾 POS Pro</header>
+<header>📦 POS Pro</header>
 
 <!-- LOGIN -->
 <div id="loginBox" class="container">
@@ -46,7 +46,9 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 
 <nav>
   <button class="active" onclick="showSection('sales',this)">المبيعات</button>
-  <button onclick="showSection('invoices',this)">الفاتورة</button>
+  <button onclick="showSection('invoice',this)">الفاتورة</button>
+  <button onclick="showSection('stock',this)">المخزون</button>
+  <button onclick="showSection('inventory',this)">الجرد</button>
   <button onclick="logout()">خروج</button>
 </nav>
 
@@ -56,30 +58,55 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 <div id="sales" class="card">
   <h3>إضافة صنف</h3>
   <input id="itemName" placeholder="اسم الصنف">
-  <input id="itemQty" type="number" value="1" placeholder="الكمية">
+  <input id="itemQty" type="number" value="1">
   <input id="itemPrice" type="number" placeholder="السعر">
+  <select id="itemUnit">
+    <option>قطعة</option>
+    <option>كرتونة</option>
+    <option>كيلو</option>
+  </select>
   <button class="primary" onclick="addItem()">➕ إضافة للفاتورة</button>
 </div>
 
 <!-- INVOICE -->
-<div id="invoices" class="card hidden">
+<div id="invoice" class="card hidden">
   <h3>فاتورة البيع</h3>
-
   <table>
     <thead>
       <tr>
         <th>الصنف</th>
         <th>كمية</th>
+        <th>وحدة</th>
         <th>سعر</th>
-        <th>الإجمالي</th>
+        <th>إجمالي</th>
       </tr>
     </thead>
     <tbody id="invoiceBody"></tbody>
   </table>
-
   <p class="total">الإجمالي: <span id="grandTotal">0</span> ج</p>
+  <button class="primary" onclick="printInvoice()">🖨️ طباعة</button>
+</div>
 
-  <button class="primary" onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
+<!-- STOCK -->
+<div id="stock" class="card hidden">
+  <h3>المخزون</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>الصنف</th>
+        <th>الكمية</th>
+        <th>الوحدة</th>
+      </tr>
+    </thead>
+    <tbody id="stockBody"></tbody>
+  </table>
+</div>
+
+<!-- INVENTORY -->
+<div id="inventory" class="card hidden">
+  <h3>جرد المخزن</h3>
+  <button class="primary" onclick="runInventory()">📋 تنفيذ الجرد</button>
+  <div id="inventoryResult"></div>
 </div>
 
 </div>
@@ -94,14 +121,8 @@ function login(){
     startApp();
   }else alert("بيانات غير صحيحة");
 }
-function logout(){
-  localStorage.removeItem("logged");
-  location.reload();
-}
-function startApp(){
-  loginBox.classList.add("hidden");
-  app.classList.remove("hidden");
-}
+function logout(){localStorage.removeItem("logged");location.reload();}
+function startApp(){loginBox.classList.add("hidden");app.classList.remove("hidden");}
 if(localStorage.getItem("logged")==="1") startApp();
 
 // ===== NAV =====
@@ -112,31 +133,38 @@ function showSection(id,btn){
   btn.classList.add("active");
 }
 
-// ===== SALES =====
+// ===== DATA =====
 let invoice=[];
+let stock={};
+
+// ===== SALES =====
 function addItem(){
-  const name=itemName.value;
-  const qty=+itemQty.value;
-  const price=+itemPrice.value;
+  let name=itemName.value;
+  let qty=+itemQty.value;
+  let price=+itemPrice.value;
+  let unit=itemUnit.value;
   if(!name||!price) return alert("اكمل البيانات");
 
-  invoice.push({name,qty,price});
+  invoice.push({name,qty,price,unit});
+  stock[name]=(stock[name]||0)-qty;
+
   renderInvoice();
-  itemName.value="";
-  itemQty.value=1;
-  itemPrice.value="";
+  renderStock();
+
+  itemName.value="";itemQty.value=1;itemPrice.value="";
 }
 
 function renderInvoice(){
   invoiceBody.innerHTML="";
   let total=0;
   invoice.forEach(i=>{
-    const t=i.qty*i.price;
+    let t=i.qty*i.price;
     total+=t;
     invoiceBody.innerHTML+=`
       <tr>
         <td>${i.name}</td>
         <td>${i.qty}</td>
+        <td>${i.unit}</td>
         <td>${i.price}</td>
         <td>${t}</td>
       </tr>`;
@@ -144,20 +172,31 @@ function renderInvoice(){
   grandTotal.innerText=total;
 }
 
+// ===== STOCK =====
+function renderStock(){
+  stockBody.innerHTML="";
+  Object.keys(stock).forEach(k=>{
+    stockBody.innerHTML+=`
+      <tr>
+        <td>${k}</td>
+        <td>${stock[k]}</td>
+        <td>-</td>
+      </tr>`;
+  });
+}
+
+// ===== INVENTORY =====
+function runInventory(){
+  inventoryResult.innerHTML="<h4>نتيجة الجرد:</h4>";
+  Object.keys(stock).forEach(k=>{
+    inventoryResult.innerHTML+=`<div>${k} : ${stock[k]}</div>`;
+  });
+}
+
 // ===== PRINT =====
 function printInvoice(){
-  let html=`<h3>فاتورة بيع</h3><table border="1" width="100%">
-  <tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr>`;
-  let total=0;
-  invoice.forEach(i=>{
-    let t=i.qty*i.price;
-    total+=t;
-    html+=`<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.price}</td><td>${t}</td></tr>`;
-  });
-  html+=`</table><h3>الإجمالي: ${total}</h3>`;
-
   let w=window.open("");
-  w.document.write(html);
+  w.document.write(document.getElementById("invoice").innerHTML);
   w.print();
   w.close();
 }
