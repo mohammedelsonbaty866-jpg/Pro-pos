@@ -27,3 +27,10 @@ const SALES_KEY = "pos_sales";
 const PURCHASES_KEY = "pos_purchases";
 const EXPENSES_KEY = "pos_expenses";
 const AGENTS_KEY = "pos_agents";
+function save(key,data){
+  localStorage.setItem(key,JSON.stringify(data));
+}
+
+function load(key){
+  return JSON.parse(localStorage.getItem(key)||"[]");
+}
