@@ -4,24 +4,19 @@
 <meta charset="UTF-8">
 <title>POS Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-:root{
-  --main:#0d6efd;
-  --bg:#f4f6f8;
-  --card:#fff;
-}
+:root{--main:#0d6efd;--bg:#f4f6f8}
 body{margin:0;font-family:tahoma;background:var(--bg)}
 header{background:var(--main);color:#fff;padding:15px;text-align:center}
 nav{display:flex;background:#fff;border-bottom:1px solid #ddd}
 nav button{flex:1;padding:12px;border:none;background:none}
 nav button.active{background:var(--main);color:#fff}
 .container{padding:15px}
-.card{background:var(--card);padding:15px;border-radius:6px;margin-bottom:15px}
+.card{background:#fff;padding:15px;border-radius:6px;margin-bottom:15px}
 .hidden{display:none}
 input,select,button{width:100%;padding:10px;margin-top:8px}
 button.primary{background:var(--main);color:#fff;border:none}
-table{width:100%;border-collapse:collapse;margin-top:10px}
+table{width:100%;border-collapse:collapse}
 th,td{border:1px solid #ddd;padding:6px;text-align:center}
 .total{font-size:18px;font-weight:bold}
 </style>
@@ -29,7 +24,7 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 
 <body>
 
-<header>📦 POS Pro</header>
+<header>📊 POS Pro</header>
 
 <!-- LOGIN -->
 <div id="loginBox" class="container">
@@ -44,113 +39,102 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 <!-- APP -->
 <div id="app" class="hidden">
 
-<nav>
-  <button class="active" onclick="showSection('sales',this)">المبيعات</button>
-  <button onclick="showSection('invoice',this)">الفاتورة</button>
-  <button onclick="showSection('stock',this)">المخزون</button>
-  <button onclick="showSection('inventory',this)">الجرد</button>
-  <button onclick="logout()">خروج</button>
-</nav>
+<nav id="navBar"></nav>
 
 <div class="container">
 
 <!-- SALES -->
 <div id="sales" class="card">
-  <h3>إضافة صنف</h3>
-  <input id="itemName" placeholder="اسم الصنف">
-  <input id="itemQty" type="number" value="1">
-  <input id="itemPrice" type="number" placeholder="السعر">
-  <select id="itemUnit">
-    <option>قطعة</option>
-    <option>كرتونة</option>
-    <option>كيلو</option>
-  </select>
-  <button class="primary" onclick="addItem()">➕ إضافة للفاتورة</button>
+<h3>فاتورة بيع</h3>
+<input id="itemName" placeholder="اسم الصنف">
+<input id="itemQty" type="number" value="1">
+<input id="itemPrice" type="number" placeholder="السعر">
+<button class="primary" onclick="addItem()">➕ إضافة</button>
+
+<table>
+<thead>
+<tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr>
+</thead>
+<tbody id="invoiceBody"></tbody>
+</table>
+
+<p class="total">الإجمالي: <span id="grandTotal">0</span> ج</p>
+<button class="primary" onclick="printInvoice()">🖨️ طباعة</button>
 </div>
 
-<!-- INVOICE -->
-<div id="invoice" class="card hidden">
-  <h3>فاتورة البيع</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>الصنف</th>
-        <th>كمية</th>
-        <th>وحدة</th>
-        <th>سعر</th>
-        <th>إجمالي</th>
-      </tr>
-    </thead>
-    <tbody id="invoiceBody"></tbody>
-  </table>
-  <p class="total">الإجمالي: <span id="grandTotal">0</span> ج</p>
-  <button class="primary" onclick="printInvoice()">🖨️ طباعة</button>
-</div>
-
-<!-- STOCK -->
-<div id="stock" class="card hidden">
-  <h3>المخزون</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>الصنف</th>
-        <th>الكمية</th>
-        <th>الوحدة</th>
-      </tr>
-    </thead>
-    <tbody id="stockBody"></tbody>
-  </table>
-</div>
-
-<!-- INVENTORY -->
-<div id="inventory" class="card hidden">
-  <h3>جرد المخزن</h3>
-  <button class="primary" onclick="runInventory()">📋 تنفيذ الجرد</button>
-  <div id="inventoryResult"></div>
+<!-- REPORTS -->
+<div id="reports" class="card hidden">
+<h3>تقارير المبيعات</h3>
+<div id="reportList"></div>
 </div>
 
 </div>
 </div>
 
 <script>
+// ===== USERS =====
+const USERS=[
+ {u:"admin",p:"1234",role:"admin"},
+ {u:"agent1",p:"1234",role:"agent"},
+ {u:"agent2",p:"1234",role:"agent"}
+];
+
+let currentUser=null;
+let invoice=[];
+let allInvoices=JSON.parse(localStorage.getItem("invoices")||"[]");
+
 // ===== LOGIN =====
-const USER={user:"admin",pass:"1234"};
 function login(){
-  if(loginUser.value===USER.user && loginPass.value===USER.pass){
-    localStorage.setItem("logged","1");
-    startApp();
-  }else alert("بيانات غير صحيحة");
+  let u=loginUser.value;
+  let p=loginPass.value;
+  let user=USERS.find(x=>x.u===u && x.p===p);
+  if(!user) return alert("بيانات غير صحيحة");
+  currentUser=user;
+  localStorage.setItem("user",JSON.stringify(user));
+  startApp();
 }
-function logout(){localStorage.removeItem("logged");location.reload();}
-function startApp(){loginBox.classList.add("hidden");app.classList.remove("hidden");}
-if(localStorage.getItem("logged")==="1") startApp();
+
+function startApp(){
+  loginBox.classList.add("hidden");
+  app.classList.remove("hidden");
+  buildNav();
+  renderReports();
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  location.reload();
+}
+
+let saved=localStorage.getItem("user");
+if(saved){currentUser=JSON.parse(saved);startApp();}
 
 // ===== NAV =====
-function showSection(id,btn){
-  document.querySelectorAll('.card').forEach(c=>c.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
+function buildNav(){
+  navBar.innerHTML="";
+  navBar.innerHTML+=`<button class="active" onclick="show('sales',this)">المبيعات</button>`;
+  if(currentUser.role==="admin"){
+    navBar.innerHTML+=`<button onclick="show('reports',this)">التقارير</button>`;
+  }
+  navBar.innerHTML+=`<button onclick="logout()">خروج</button>`;
 }
 
-// ===== DATA =====
-let invoice=[];
-let stock={};
+function show(id,btn){
+  document.querySelectorAll('.card').forEach(x=>x.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+}
 
 // ===== SALES =====
 function addItem(){
   let name=itemName.value;
   let qty=+itemQty.value;
   let price=+itemPrice.value;
-  let unit=itemUnit.value;
-  if(!name||!price) return alert("اكمل البيانات");
+  if(!name||!price)return alert("اكمل البيانات");
 
-  invoice.push({name,qty,price,unit});
-  stock[name]=(stock[name]||0)-qty;
-
+  invoice.push({name,qty,price});
   renderInvoice();
-  renderStock();
-
   itemName.value="";itemQty.value=1;itemPrice.value="";
 }
 
@@ -161,44 +145,35 @@ function renderInvoice(){
     let t=i.qty*i.price;
     total+=t;
     invoiceBody.innerHTML+=`
-      <tr>
-        <td>${i.name}</td>
-        <td>${i.qty}</td>
-        <td>${i.unit}</td>
-        <td>${i.price}</td>
-        <td>${t}</td>
-      </tr>`;
+    <tr>
+      <td>${i.name}</td>
+      <td>${i.qty}</td>
+      <td>${i.price}</td>
+      <td>${t}</td>
+    </tr>`;
   });
   grandTotal.innerText=total;
 }
 
-// ===== STOCK =====
-function renderStock(){
-  stockBody.innerHTML="";
-  Object.keys(stock).forEach(k=>{
-    stockBody.innerHTML+=`
-      <tr>
-        <td>${k}</td>
-        <td>${stock[k]}</td>
-        <td>-</td>
-      </tr>`;
-  });
-}
-
-// ===== INVENTORY =====
-function runInventory(){
-  inventoryResult.innerHTML="<h4>نتيجة الجرد:</h4>";
-  Object.keys(stock).forEach(k=>{
-    inventoryResult.innerHTML+=`<div>${k} : ${stock[k]}</div>`;
-  });
-}
-
-// ===== PRINT =====
 function printInvoice(){
-  let w=window.open("");
-  w.document.write(document.getElementById("invoice").innerHTML);
-  w.print();
-  w.close();
+  allInvoices.push({
+    agent:currentUser.u,
+    total:+grandTotal.innerText,
+    date:new Date().toLocaleString()
+  });
+  localStorage.setItem("invoices",JSON.stringify(allInvoices));
+  window.print();
+  invoice=[];renderInvoice();
+}
+
+// ===== REPORTS =====
+function renderReports(){
+  if(currentUser.role!=="admin")return;
+  reportList.innerHTML="";
+  allInvoices.forEach(i=>{
+    reportList.innerHTML+=`
+      <div>مندوب: ${i.agent} | ${i.total} ج | ${i.date}</div>`;
+  });
 }
 </script>
 
