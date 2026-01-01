@@ -1,5 +1,15 @@
 
-PosPro SaaS
-- Frontend: Cloudflare Pages
-- Backend: Cloudflare Workers
-- Auth: Firebase
+POS Pro
+برنامج محاسبي بسيط بدون إنترنت
+
+المميزات:
+- فواتير بيع
+- مشتريات
+- مصروفات
+- مخزون
+- مناديب
+- تقارير وصافي ربح
+- طباعة فواتير
+- يعمل بدون إنترنت
+
+
