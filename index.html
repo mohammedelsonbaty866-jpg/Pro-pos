@@ -8,12 +8,13 @@
 <style>
 body{font-family:tahoma;background:#f4f6f8;margin:0}
 header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
+.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
+input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
+button.primary{background:#0d6efd;color:#fff;border:none}
 nav{display:flex;background:#fff}
 nav button{flex:1;padding:10px;border:none;background:none}
 nav button.active{background:#0d6efd;color:#fff}
-.box{background:#fff;margin:10px;padding:15px;border-radius:6px}
-input,button{width:100%;padding:10px;margin-top:8px}
-button.primary{background:#0d6efd;color:#fff;border:none}
+.hidden{display:none}
 </style>
 </head>
 
@@ -21,11 +22,23 @@ button.primary{background:#0d6efd;color:#fff;border:none}
 
 <header>📊 POS Pro</header>
 
+<!-- LOGIN -->
+<div id="loginBox" class="box">
+  <h3>تسجيل الدخول</h3>
+  <input id="loginEmail" placeholder="البريد الإلكتروني">
+  <input id="loginPass" type="password" placeholder="كلمة المرور">
+  <button class="primary" onclick="login()">دخول</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
 <nav>
 <button class="active" onclick="show('sales',this)">المبيعات</button>
 <button onclick="show('purchases',this)">المشتريات</button>
 <button onclick="show('expenses',this)">المصروفات</button>
 <button onclick="show('reports',this)">التقارير</button>
+<button onclick="logout()">خروج</button>
 </nav>
 
 <div id="sales" class="box">
@@ -37,7 +50,7 @@ button.primary{background:#0d6efd;color:#fff;border:none}
 <div id="salesList"></div>
 </div>
 
-<div id="purchases" class="box" style="display:none">
+<div id="purchases" class="box hidden">
 <h3>مشتريات</h3>
 <input id="buyName" placeholder="اسم الصنف">
 <input id="buyQty" type="number" value="1">
@@ -46,7 +59,7 @@ button.primary{background:#0d6efd;color:#fff;border:none}
 <div id="purchaseList"></div>
 </div>
 
-<div id="expenses" class="box" style="display:none">
+<div id="expenses" class="box hidden">
 <h3>مصروفات</h3>
 <input id="expDesc" placeholder="الوصف">
 <input id="expAmount" type="number" placeholder="المبلغ">
@@ -54,41 +67,68 @@ button.primary{background:#0d6efd;color:#fff;border:none}
 <div id="expenseList"></div>
 </div>
 
-<div id="reports" class="box" style="display:none">
+<div id="reports" class="box hidden">
 <h3>التقارير</h3>
-<p>إجمالي المبيعات: <b id="totalSales">0</b></p>
-<p>إجمالي المشتريات: <b id="totalBuys">0</b></p>
-<p>إجمالي المصروفات: <b id="totalExp">0</b></p>
-<p>صافي الربح: <b id="netProfit">0</b></p>
+<p>المبيعات: <b id="tSales">0</b></p>
+<p>المشتريات: <b id="tBuys">0</b></p>
+<p>المصروفات: <b id="tExp">0</b></p>
+<p>صافي الربح: <b id="tNet">0</b></p>
+</div>
+
 </div>
 
 <script>
+// ===== AUTH (محلي مؤقت) =====
+const USER = { email:"admin@pos.com", pass:"1234" };
+
+function login(){
+  if(loginEmail.value===USER.email && loginPass.value===USER.pass){
+    localStorage.setItem("logged","1");
+    startApp();
+  }else{
+    alert("بيانات غير صحيحة");
+  }
+}
+
+function logout(){
+  localStorage.removeItem("logged");
+  location.reload();
+}
+
+function startApp(){
+  loginBox.classList.add("hidden");
+  app.classList.remove("hidden");
+}
+
+if(localStorage.getItem("logged")==="1") startApp();
+
+// ===== APP =====
 let sales=[],buys=[],expenses=[];
 
 function show(id,b){
-document.querySelectorAll('.box').forEach(x=>x.style.display='none');
-document.getElementById(id).style.display='block';
-document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
-b.classList.add('active');
+document.querySelectorAll('#app .box').forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
+b.classList.add("active");
 }
 
 function addSale(){
-let q=+saleQty.value,p=+salePrice.value;
-sales.push(q*p);
-salesList.innerHTML+=`<div>${saleName.value} × ${q} = ${q*p}</div>`;
+let t=saleQty.value*salePrice.value;
+sales.push(t);
+salesList.innerHTML+=`<div>${saleName.value} = ${t}</div>`;
 update();
 }
 
 function addPurchase(){
-let q=+buyQty.value,p=+buyPrice.value;
-buys.push(q*p);
-purchaseList.innerHTML+=`<div>${buyName.value} × ${q} = ${q*p}</div>`;
+let t=buyQty.value*buyPrice.value;
+buys.push(t);
+purchaseList.innerHTML+=`<div>${buyName.value} = ${t}</div>`;
 update();
 }
 
 function addExpense(){
 expenses.push(+expAmount.value);
-expenseList.innerHTML+=`<div>${expDesc.value} : ${expAmount.value}</div>`;
+expenseList.innerHTML+=`<div>${expDesc.value} = ${expAmount.value}</div>`;
 update();
 }
 
@@ -96,10 +136,10 @@ function update(){
 let s=sales.reduce((a,b)=>a+b,0);
 let b=buys.reduce((a,b)=>a+b,0);
 let e=expenses.reduce((a,b)=>a+b,0);
-totalSales.innerText=s;
-totalBuys.innerText=b;
-totalExp.innerText=e;
-netProfit.innerText=s-b-e;
+tSales.innerText=s;
+tBuys.innerText=b;
+tExp.innerText=e;
+tNet.innerText=s-b-e;
 }
 </script>
 
