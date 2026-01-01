@@ -1,111 +1,107 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>PosPro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>POS Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="css/app.css" />
-
-  <style>
-    body {
-      font-family: Tahoma;
-      background: #f4f6f8;
-      margin: 0;
-    }
-    .hidden { display: none; }
-    .card {
-      background: #fff;
-      padding: 20px;
-      margin: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,.1);
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    button {
-      background: #0d6efd;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    nav button {
-      width: auto;
-      margin: 5px;
-    }
-  </style>
+<style>
+body{font-family:tahoma;background:#f4f6f8;margin:0}
+header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
+nav{display:flex;background:#fff}
+nav button{flex:1;padding:10px;border:none;background:none}
+nav button.active{background:#0d6efd;color:#fff}
+.box{background:#fff;margin:10px;padding:15px;border-radius:6px}
+input,button{width:100%;padding:10px;margin-top:8px}
+button.primary{background:#0d6efd;color:#fff;border:none}
+</style>
 </head>
 
 <body>
 
-<!-- 🔐 صفحة تسجيل / دخول -->
-<div id="authPage" class="card">
-  <h2>تسجيل الدخول</h2>
-<input id="email" placeholder="البريد الإلكتروني">
-<input id="password" type="password" placeholder="كلمة المرور">
+<header>📊 POS Pro</header>
 
-<button id="loginBtn">تسجيل دخول</button>
-<button id="registerBtn">تسجيل حساب</button>
+<nav>
+<button class="active" onclick="show('sales',this)">المبيعات</button>
+<button onclick="show('purchases',this)">المشتريات</button>
+<button onclick="show('expenses',this)">المصروفات</button>
+<button onclick="show('reports',this)">التقارير</button>
+</nav>
 
-  <p id="authError" style="color:red"></p>
+<div id="sales" class="box">
+<h3>فاتورة بيع</h3>
+<input id="saleName" placeholder="اسم الصنف">
+<input id="saleQty" type="number" value="1">
+<input id="salePrice" type="number" placeholder="السعر">
+<button class="primary" onclick="addSale()">➕ إضافة</button>
+<div id="salesList"></div>
 </div>
 
-<!-- 🧾 التطبيق -->
-<div id="appPage" class="hidden">
-
-  <nav class="card">
-    <button onclick="showSection('sales')">المبيعات</button>
-    <button onclick="showSection('purchases')">المشتريات</button>
-    <button onclick="showSection('expenses')">المصروفات</button>
-    <button onclick="showSection('reports')">التقارير</button>
-    <button onclick="logout()">خروج</button>
-  </nav>
-
-  <!-- المبيعات -->
-  <div id="sales" class="card section">
-    <h3>فاتورة بيع</h3>
-    <input id="saleItem" placeholder="اسم الصنف" />
-    <input id="saleQty" type="number" placeholder="الكمية" />
-    <input id="salePrice" type="number" placeholder="السعر" />
-    <button onclick="addSale()">حفظ الفاتورة</button>
-  </div>
-
-  <!-- المشتريات -->
-  <div id="purchases" class="card section hidden">
-    <h3>فاتورة شراء</h3>
-    <input id="purchaseItem" placeholder="الصنف" />
-    <input id="purchaseQty" type="number" placeholder="الكمية" />
-    <input id="purchasePrice" type="number" placeholder="السعر" />
-    <button onclick="addPurchase()">حفظ</button>
-  </div>
-
-  <!-- المصروفات -->
-  <div id="expenses" class="card section hidden">
-    <h3>مصروف</h3>
-    <input id="expenseDesc" placeholder="الوصف" />
-    <input id="expenseAmount" type="number" placeholder="المبلغ" />
-    <button onclick="addExpense()">إضافة</button>
-  </div>
-
-  <!-- التقارير -->
-  <div id="reports" class="card section hidden">
-    <h3>التقارير</h3>
-    <button onclick="loadReports()">عرض التقرير</button>
-    <div id="reportResult"></div>
-  </div>
-
+<div id="purchases" class="box" style="display:none">
+<h3>مشتريات</h3>
+<input id="buyName" placeholder="اسم الصنف">
+<input id="buyQty" type="number" value="1">
+<input id="buyPrice" type="number" placeholder="السعر">
+<button class="primary" onclick="addPurchase()">➕ إضافة</button>
+<div id="purchaseList"></div>
 </div>
 
-<!-- 🔌 JS Files -->
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/auth.js"></script>
-<script type="module" src="js/app.js"></script>
+<div id="expenses" class="box" style="display:none">
+<h3>مصروفات</h3>
+<input id="expDesc" placeholder="الوصف">
+<input id="expAmount" type="number" placeholder="المبلغ">
+<button class="primary" onclick="addExpense()">➕ إضافة</button>
+<div id="expenseList"></div>
+</div>
+
+<div id="reports" class="box" style="display:none">
+<h3>التقارير</h3>
+<p>إجمالي المبيعات: <b id="totalSales">0</b></p>
+<p>إجمالي المشتريات: <b id="totalBuys">0</b></p>
+<p>إجمالي المصروفات: <b id="totalExp">0</b></p>
+<p>صافي الربح: <b id="netProfit">0</b></p>
+</div>
+
+<script>
+let sales=[],buys=[],expenses=[];
+
+function show(id,b){
+document.querySelectorAll('.box').forEach(x=>x.style.display='none');
+document.getElementById(id).style.display='block';
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+b.classList.add('active');
+}
+
+function addSale(){
+let q=+saleQty.value,p=+salePrice.value;
+sales.push(q*p);
+salesList.innerHTML+=`<div>${saleName.value} × ${q} = ${q*p}</div>`;
+update();
+}
+
+function addPurchase(){
+let q=+buyQty.value,p=+buyPrice.value;
+buys.push(q*p);
+purchaseList.innerHTML+=`<div>${buyName.value} × ${q} = ${q*p}</div>`;
+update();
+}
+
+function addExpense(){
+expenses.push(+expAmount.value);
+expenseList.innerHTML+=`<div>${expDesc.value} : ${expAmount.value}</div>`;
+update();
+}
+
+function update(){
+let s=sales.reduce((a,b)=>a+b,0);
+let b=buys.reduce((a,b)=>a+b,0);
+let e=expenses.reduce((a,b)=>a+b,0);
+totalSales.innerText=s;
+totalBuys.innerText=b;
+totalExp.innerText=e;
+netProfit.innerText=s-b-e;
+}
+</script>
 
 </body>
 </html>
