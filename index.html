@@ -6,222 +6,160 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{font-family:tahoma;background:#f4f6f8;margin:0}
-header{background:#0d6efd;color:#fff;padding:15px;text-align:center}
-.box{background:#fff;margin:15px;padding:15px;border-radius:6px}
-input,select,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
-button.primary{background:#0d6efd;color:#fff;border:none}
-nav{display:flex;background:#fff}
-nav button{flex:1;padding:10px;border:none;background:none}
-nav button.active{background:#0d6efd;color:#fff}
-.hidden{display:none}
-.list div{padding:6px 0;border-bottom:1px solid #eee}
-.invoice{border:1px dashed #999;padding:10px;margin-top:10px}
-.summary{background:#eef3ff;padding:10px;border-radius:5px;margin-top:10px}
-@media print{
-nav,header,button,select,input{display:none}
-body{background:#fff}
+:root{
+  --main:#0d6efd;
+  --bg:#f4f6f8;
+  --card:#fff;
 }
+body{margin:0;font-family:tahoma;background:var(--bg)}
+header{background:var(--main);color:#fff;padding:15px;text-align:center}
+nav{display:flex;background:#fff;border-bottom:1px solid #ddd}
+nav button{flex:1;padding:12px;border:none;background:none}
+nav button.active{background:var(--main);color:#fff}
+.container{padding:15px}
+.card{background:var(--card);padding:15px;border-radius:6px;margin-bottom:15px}
+.hidden{display:none}
+input,button{width:100%;padding:10px;margin-top:8px}
+button.primary{background:var(--main);color:#fff;border:none}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ddd;padding:6px;text-align:center}
+.total{font-size:18px;font-weight:bold}
 </style>
 </head>
 
 <body>
 
-<header>📊 POS Pro</header>
+<header>🧾 POS Pro</header>
 
 <!-- LOGIN -->
-<div id="loginBox" class="box">
-<h3>تسجيل الدخول</h3>
-<input id="loginEmail" placeholder="البريد الإلكتروني">
-<input id="loginPass" type="password" placeholder="كلمة المرور">
-<button class="primary" onclick="login()">دخول</button>
+<div id="loginBox" class="container">
+  <div class="card">
+    <h3>تسجيل الدخول</h3>
+    <input id="loginUser" placeholder="اسم المستخدم">
+    <input id="loginPass" type="password" placeholder="كلمة المرور">
+    <button class="primary" onclick="login()">دخول</button>
+  </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
 
 <nav>
-<button class="active" onclick="show('sales',this)">المبيعات</button>
-<button onclick="show('purchases',this)">المشتريات</button>
-<button onclick="show('expenses',this)">المصروفات</button>
-<button onclick="show('reports',this)">التقارير</button>
-<button onclick="logout()">خروج</button>
+  <button class="active" onclick="showSection('sales',this)">المبيعات</button>
+  <button onclick="showSection('invoices',this)">الفاتورة</button>
+  <button onclick="logout()">خروج</button>
 </nav>
 
+<div class="container">
+
 <!-- SALES -->
-<div id="sales" class="box">
-<h3>🧾 فاتورة بيع</h3>
-<input id="saleName" placeholder="اسم الصنف">
-<input id="saleQty" type="number" value="1">
-<input id="salePrice" type="number" placeholder="السعر">
-<button class="primary" onclick="addSale()">➕ إضافة</button>
-
-<div id="invoiceBox" class="invoice hidden">
-<h4>فاتورة بيع</h4>
-<p>رقم: <b id="invId"></b></p>
-<p>التاريخ: <b id="invDate"></b></p>
-<p>المندوب: <b id="invAgent"></b></p>
-<hr>
-<div id="invItems"></div>
-<hr>
-<p>الإجمالي: <b id="invTotal"></b></p>
-<button onclick="window.print()">🖨️ طباعة</button>
-</div>
+<div id="sales" class="card">
+  <h3>إضافة صنف</h3>
+  <input id="itemName" placeholder="اسم الصنف">
+  <input id="itemQty" type="number" value="1" placeholder="الكمية">
+  <input id="itemPrice" type="number" placeholder="السعر">
+  <button class="primary" onclick="addItem()">➕ إضافة للفاتورة</button>
 </div>
 
-<!-- PURCHASES -->
-<div id="purchases" class="box hidden">
-<h3>📦 المشتريات</h3>
-<input id="pName" placeholder="اسم الصنف">
-<input id="pQty" type="number" placeholder="الكمية">
-<input id="pCost" type="number" placeholder="سعر الشراء">
-<button class="primary" onclick="addPurchase()">➕ إضافة</button>
-<div id="purchaseList" class="list"></div>
+<!-- INVOICE -->
+<div id="invoices" class="card hidden">
+  <h3>فاتورة البيع</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>الصنف</th>
+        <th>كمية</th>
+        <th>سعر</th>
+        <th>الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody id="invoiceBody"></tbody>
+  </table>
+
+  <p class="total">الإجمالي: <span id="grandTotal">0</span> ج</p>
+
+  <button class="primary" onclick="printInvoice()">🖨️ طباعة الفاتورة</button>
 </div>
 
-<!-- EXPENSES -->
-<div id="expenses" class="box hidden">
-<h3>💸 المصروفات</h3>
-<select id="expType">
-<option>إيجار</option>
-<option>كهرباء</option>
-<option>مياه</option>
-<option>مرتبات</option>
-<option>أخرى</option>
-</select>
-<input id="expNote" placeholder="وصف المصروف">
-<input id="expAmount" type="number" placeholder="المبلغ">
-<button class="primary" onclick="addExpense()">➕ تسجيل</button>
-<div id="expenseList" class="list"></div>
 </div>
-
-<!-- REPORTS -->
-<div id="reports" class="box hidden">
-<h3>📊 التقارير</h3>
-
-<div class="summary">
-<p>إجمالي المبيعات: <b id="rSales">0</b></p>
-<p>إجمالي المشتريات: <b id="rBuys">0</b></p>
-<p>إجمالي المصروفات: <b id="rExp">0</b></p>
-<p>🟢 صافي الربح: <b id="rNet">0</b></p>
-</div>
-
-<hr>
-<h4>📦 المخزون</h4>
-<div id="stockList"></div>
-</div>
-
 </div>
 
 <script>
-// ===== USERS =====
-const USERS=[
-{id:"admin",email:"admin@pos.com",pass:"1234",role:"admin",name:"المدير"},
-{id:"a1",email:"agent1",pass:"1234",role:"agent",name:"مندوب 1"}
-];
-
-let current=null;
-
-// ===== AUTH =====
+// ===== LOGIN =====
+const USER={user:"admin",pass:"1234"};
 function login(){
-let u=USERS.find(x=>x.email===loginEmail.value && x.pass===loginPass.value);
-if(!u) return alert("بيانات غير صحيحة");
-localStorage.setItem("user",JSON.stringify(u));
-start();
+  if(loginUser.value===USER.user && loginPass.value===USER.pass){
+    localStorage.setItem("logged","1");
+    startApp();
+  }else alert("بيانات غير صحيحة");
 }
-function logout(){localStorage.clear();location.reload();}
-function start(){
-current=JSON.parse(localStorage.getItem("user"));
-loginBox.classList.add("hidden");
-app.classList.remove("hidden");
-renderReports();
+function logout(){
+  localStorage.removeItem("logged");
+  location.reload();
 }
-if(localStorage.getItem("user")) start();
-
-// ===== DATA =====
-let sales=JSON.parse(localStorage.getItem("sales")||"[]");
-let purchases=JSON.parse(localStorage.getItem("purchases")||"[]");
-let expenses=JSON.parse(localStorage.getItem("expenses")||"[]");
-let products=JSON.parse(localStorage.getItem("products")||"[]");
-let currentInvoice=[];
+function startApp(){
+  loginBox.classList.add("hidden");
+  app.classList.remove("hidden");
+}
+if(localStorage.getItem("logged")==="1") startApp();
 
 // ===== NAV =====
-function show(id,b){
-document.querySelectorAll('#app .box').forEach(x=>x.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-document.querySelectorAll('nav button').forEach(x=>x.classList.remove("active"));
-b.classList.add("active");
+function showSection(id,btn){
+  document.querySelectorAll('.card').forEach(c=>c.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
 }
 
 // ===== SALES =====
-function addSale(){
-let prod=products.find(p=>p.name===saleName.value);
-if(!prod||prod.qty<saleQty.value) return alert("مخزون غير كافي");
+let invoice=[];
+function addItem(){
+  const name=itemName.value;
+  const qty=+itemQty.value;
+  const price=+itemPrice.value;
+  if(!name||!price) return alert("اكمل البيانات");
 
-let total=saleQty.value*salePrice.value;
-prod.qty-=saleQty.value;
-
-currentInvoice.push({name:saleName.value,qty:saleQty.value,total});
-renderInvoice();
+  invoice.push({name,qty,price});
+  renderInvoice();
+  itemName.value="";
+  itemQty.value=1;
+  itemPrice.value="";
 }
 
 function renderInvoice(){
-invoiceBox.classList.remove("hidden");
-invId.innerText=Date.now();
-invDate.innerText=new Date().toLocaleString('ar-EG');
-invAgent.innerText=current.name;
-
-invItems.innerHTML="";
-let sum=0;
-currentInvoice.forEach(i=>{
-sum+=i.total;
-invItems.innerHTML+=`<div>${i.name} × ${i.qty} = ${i.total}</div>`;
-});
-invTotal.innerText=sum;
-
-sales.push({agent:current.id,total:sum});
-save();renderReports();
+  invoiceBody.innerHTML="";
+  let total=0;
+  invoice.forEach(i=>{
+    const t=i.qty*i.price;
+    total+=t;
+    invoiceBody.innerHTML+=`
+      <tr>
+        <td>${i.name}</td>
+        <td>${i.qty}</td>
+        <td>${i.price}</td>
+        <td>${t}</td>
+      </tr>`;
+  });
+  grandTotal.innerText=total;
 }
 
-// ===== PURCHASES =====
-function addPurchase(){
-let p=products.find(x=>x.name===pName.value);
-p?p.qty+=+pQty.value:products.push({name:pName.value,qty:+pQty.value});
-purchases.push(+pCost.value * +pQty.value);
-purchaseList.innerHTML+=`<div>${pName.value}</div>`;
-save();renderReports();
-}
+// ===== PRINT =====
+function printInvoice(){
+  let html=`<h3>فاتورة بيع</h3><table border="1" width="100%">
+  <tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr>`;
+  let total=0;
+  invoice.forEach(i=>{
+    let t=i.qty*i.price;
+    total+=t;
+    html+=`<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.price}</td><td>${t}</td></tr>`;
+  });
+  html+=`</table><h3>الإجمالي: ${total}</h3>`;
 
-// ===== EXPENSES =====
-function addExpense(){
-expenses.push({type:expType.value,amount:+expAmount.value});
-expenseList.innerHTML+=`<div>${expType.value} - ${expAmount.value}</div>`;
-expAmount.value="";expNote.value="";
-save();renderReports();
-}
-
-// ===== REPORTS =====
-function renderReports(){
-let mySales=sales.filter(s=>current.role==="admin"||s.agent===current.id);
-let s=mySales.reduce((a,b)=>a+b.total,0);
-let b=purchases.reduce((a,b)=>a+b,0);
-let e=expenses.reduce((a,b)=>a+b.amount,0);
-
-rSales.innerText=s;
-rBuys.innerText=b;
-rExp.innerText=e;
-rNet.innerText=s-b-e;
-
-stockList.innerHTML="";
-products.forEach(p=>stockList.innerHTML+=`<div>${p.name} : ${p.qty}</div>`);
-}
-
-// ===== SAVE =====
-function save(){
-localStorage.setItem("sales",JSON.stringify(sales));
-localStorage.setItem("purchases",JSON.stringify(purchases));
-localStorage.setItem("expenses",JSON.stringify(expenses));
-localStorage.setItem("products",JSON.stringify(products));
+  let w=window.open("");
+  w.document.write(html);
+  w.print();
+  w.close();
 }
 </script>
 
