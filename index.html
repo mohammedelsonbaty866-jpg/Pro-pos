@@ -1,81 +1,119 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>POS PRO - سوبر ماركت</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="css/app.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashFlow Commander - نظام محاسبي سحابي</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="components/navbar.js"></script>
+    <script src="components/sidebar.js"></script>
 </head>
-
-<body>
-
-<header>🛒 POS PRO – سوبر ماركت</header>
-
-<nav>
-  <button class="active" onclick="showPage('sales',this)">المبيعات</button>
-  <button onclick="showPage('purchases',this)">المشتريات</button>
-  <button onclick="showPage('inventory',this)">المخزون</button>
-  <button onclick="showPage('agents',this)">المناديب</button>
-  <button onclick="showPage('reports',this)">التقارير</button>
-</nav>
-
-<!-- SALES -->
-<div id="sales" class="page">
-  <div class="box">
-    <h3>فاتورة بيع</h3>
-    <input id="saleName" placeholder="اسم الصنف">
-    <input id="saleQty" type="number" placeholder="الكمية">
-    <input id="salePrice" type="number" placeholder="السعر">
-    <button class="primary" onclick="addSale()">إضافة</button>
-
-    <button onclick="startBarcode('saleName')" class="primary">
-      📷 قراءة باركود
-    </button>
-
-    <div id="salesList" class="list"></div>
-  </div>
-</div>
-
-<!-- PURCHASES -->
-<div id="purchases" class="page hidden">
-  <div class="box">
-    <h3>مشتريات</h3>
-    <input id="buyName" placeholder="اسم الصنف">
-    <input id="buyQty" type="number">
-    <input id="buyPrice" type="number">
-    <button class="primary" onclick="addPurchase()">إضافة</button>
-  </div>
-</div>
-
-<!-- INVENTORY -->
-<div id="inventory" class="page hidden">
-  <div class="box">
-    <h3>المخزون</h3>
-    <div id="inventoryList"></div>
-  </div>
-</div>
-
-<!-- AGENTS -->
-<div id="agents" class="page hidden">
-  <div class="box">
-    <h3>المناديب</h3>
-    <input id="agentName" placeholder="اسم المندوب">
-    <button class="primary" onclick="addAgent()">إضافة</button>
-    <div id="agentList"></div>
-  </div>
-</div>
-
-<!-- REPORTS -->
-<div id="reports" class="page hidden">
-  <div class="box">
-    <h3>التقارير</h3>
-    <div class="report-item">المبيعات <b id="rSales">0</b></div>
-    <div class="report-item">المشتريات <b id="rBuys">0</b></div>
-    <div class="report-item">الربح <b id="rNet">0</b></div>
-  </div>
-</div>
-
-<script src="js/app.js"></script>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <custom-navbar></custom-navbar>
+    
+    <div class="flex">
+        <custom-sidebar></custom-sidebar>
+        
+        <main class="flex-1 p-8">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                    <h1 class="text-3xl font-bold text-indigo-700 mb-4">مرحبًا بك في CashFlow Commander</h1>
+                    <p class="text-gray-600 mb-6">نظام محاسبي سحابي متكامل لإدارة أعمالك المالية بكل سهولة</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Financial Summary Card -->
+                        <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-100">
+                            <div class="flex items-center mb-4">
+                                <i data-feather="dollar-sign" class="text-indigo-600 mr-3"></i>
+                                <h3 class="font-semibold text-lg">الملخص المالي</h3>
+                            </div>
+                            <p class="text-gray-700 mb-2">الإيرادات: <span class="font-bold text-green-600">25,000 ر.س</span></p>
+                            <p class="text-gray-700 mb-2">المصروفات: <span class="font-bold text-red-600">12,500 ر.س</span></p>
+                            <p class="text-gray-700">صافي الربح: <span class="font-bold text-indigo-600">12,500 ر.س</span></p>
+                        </div>
+                        
+                        <!-- Recent Transactions -->
+                        <div class="bg-white rounded-lg p-6 border border-gray-200">
+                            <div class="flex items-center mb-4">
+                                <i data-feather="credit-card" class="text-indigo-600 mr-3"></i>
+                                <h3 class="font-semibold text-lg">آخر المعاملات</h3>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b pb-2">
+                                    <div>
+                                        <p class="font-medium">فاتورة #1001</p>
+                                        <p class="text-sm text-gray-500">12 يونيو 2023</p>
+                                    </div>
+                                    <span class="text-green-600 font-bold">+1,200 ر.س</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b pb-2">
+                                    <div>
+                                        <p class="font-medium">مصاريف مكتب</p>
+                                        <p class="text-sm text-gray-500">10 يونيو 2023</p>
+                                    </div>
+                                    <span class="text-red-600 font-bold">-350 ر.س</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="bg-white rounded-lg p-6 border border-gray-200">
+                            <div class="flex items-center mb-4">
+                                <i data-feather="zap" class="text-indigo-600 mr-3"></i>
+                                <h3 class="font-semibold text-lg">إجراءات سريعة</h3>
+                            </div>
+                            <div class="space-y-3">
+                                <a href="#" class="flex items-center text-indigo-600 hover:text-indigo-800">
+                                    <i data-feather="file-plus" class="mr-2"></i>
+                                    إنشاء فاتورة جديدة
+                                </a>
+                                <a href="#" class="flex items-center text-indigo-600 hover:text-indigo-800">
+                                    <i data-feather="dollar-sign" class="mr-2"></i>
+                                    تسجيل مصروف جديد
+                                </a>
+                                <a href="#" class="flex items-center text-indigo-600 hover:text-indigo-800">
+                                    <i data-feather="users" class="mr-2"></i>
+                                    إدارة العملاء
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports Section -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-indigo-700 mb-6">التقارير المالية</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-3">الإيرادات الشهرية</h3>
+                            <div class="h-64 bg-white p-4 rounded border border-gray-200">
+                                <!-- Chart placeholder -->
+                                <div class="flex items-center justify-center h-full text-gray-400">
+                                    <i data-feather="bar-chart-2" class="w-16 h-16"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-3">المصروفات حسب الفئة</h3>
+                            <div class="h-64 bg-white p-4 rounded border border-gray-200">
+                                <!-- Chart placeholder -->
+                                <div class="flex items-center justify-center h-full text-gray-400">
+                                    <i data-feather="pie-chart" class="w-16 h-16"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        feather.replace();
+    </script>
+    <script src="script.js"></script>
 </body>
 </html>
